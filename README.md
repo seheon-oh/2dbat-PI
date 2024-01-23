@@ -14,269 +14,129 @@
 
 # Installation
 
-1. Make a directory for the python3.10 virtual environment for baygaud-PI. For example, 
+1. Make a directory for the python3.10 virtual environment for 2dbat-PI. For example, 
 
-		[seheon@sejong00] makedir /home/seheon/research/baygaud
+		[seheon@sejong00] makedir /home/seheon/research/2dbat-PI
 	
 
-2. Set up a 'python3.10 virtual environment' in the 'baygaud' directory created.
+2. Set up a 'python3.10 virtual environment' in the '2dbat' directory created.
 
-		[seheon@sejong00] python3.10 -m venv /home/seheon/research/baygaud
+		[seheon@sejong00] python3.10 -m venv /home/seheon/research/2dbat-PI
 		
 		--> Then, activate the virtual environment.
 		--> If you are using CSH or TCSH
-		[seheon@sejong00] source /home/seheon/research/baygaud/bin/activate.csh
+		[seheon@sejong00] source /home/seheon/research/2dbat-PI/bin/activate.csh
 		
 		--> If you are using BASH
-		[seheon@sejong00] source /home/seheon/research/baygaud/bin/activate
+		[seheon@sejong00] source /home/seheon/research/2dbat-PI/bin/activate
 		
-		--> Now, you enter the python3.10 virtual environment, named 'baygaud'
-		(baygaud) [seheon@sejong00]
+		--> Now, you enter the python3.10 virtual environment, named '2dbat-PI'
+		(2dbat-PI) [seheon@sejong00]
 		
 		--> FYI, to deactivate, just type 'deactivate'
-		(baygaud) [seheon@sejong00] deactivate	
+		(2dbat-PI) [seheon@sejong00] deactivate	
 	
-3. Install baygaud-PI via github,
+3. Install 2dbat-PI via github,
 
-		(baygaud) [seheon@sejong00] git clone https://github.com/seheon-oh/baygaud-PI.git
-		--> Enter baygaud-PI directory created, and install it via 'pip' command
-		(baygaud) [seheon@sejong00] cd baygaud-PI
-		
-		--> Install 'libbz2-dev' (if not pre-installed yet) which is needed for 'fitsio' package in the following installation.
-		(baygaud) [seheon@sejong00] sudo apt-get install libbz2-dev
+		(2dbat-PI) [seheon@sejong00] git clone https://github.com/seheon-oh/2dbat-PI.git
+		--> Enter 2dbat-PI directory created, and install it via 'pip' command
+		(2dbat-PI) [seheon@sejong00] cd 2dbat-PI
 		
 		--> Now, install baygaud-PI using 'pip' command
-		(baygaud) [seheon@sejong00] pip install .
+		(2dbat-PI) [seheon@sejong00] pip install .
 		
-		--> Now it should install the modules required for the baygaud-PI python3.10 environment.
+		--> Now it should install the modules required for 2dbat-PI python3.10 environment.
 		It takes a while…
 		
-		--> Note that the required python packages for baygaud-PI are only compatible
+		--> Note that the required python packages for 2dbat-PI are only compatible
 		within the virtual environment that has been created. The required package list can be found in
-		'requirements.txt' in the 'baygaud_PI' directory.
+		'requirements.txt' in the '2dbat-PI' directory.
 		
 		(Optional) Or, for developer installation (this installs the package in the same location to
 		allow for changes to be reflected across the environment), use the following command,	
-		(baygaud) [seheon@sejong00] python3 setup.py develop
+		(2dbat-PI) [seheon@sejong00] python3 setup.py develop
 		
-		
-		--> Lastly, install python3.10-tk for baygaud_viewer.py		
-		(baygaud) [seheon@sejong00] sudo apt install python3.10-tk
-
-		--> Now, it is ready for running baygaud-PI now.
+		--> Now, it is ready for running 2dbat-PI now.
 
 
 # Quick Start
 
-1. Setting up data (HI data cube)
+1. Setting up data (HI velocity field being fitted)
 
-		--> Make your own directory where the data files including the HI data cube in FITS format are located.
+		--> Make your own directory where the data files including the HI velocity field in FITS format are located.
 
 		--> Put the input data files (FITS) into the data directory. 
 
-		--> As an example, a test cube ('ngc2403.regrid.testcube.0.fits') is provided in 'demo/testcube' directory:
+		--> As an example, a test velocity field ('test_vf.fits') is provided in 'wdir' directory in _2dbat_params.py:
 
 		|| Data directory
-		[seheon@sejong00] ls /home/seheon/research/code/_python/baygaud_py/baygaud_PI/demo/test_cube
+		--> For example (see '_2dbat_params.py' in 'src'),
 
-		ngc2403.regrid.testcube.0.fits
+		|| Set data directory; in _2dbaty_params.py in 'src'
+		'wdir':'/Users/seheon/research/projects/2dbat.pi/2dbat-PI/demo/test_cube',
 
-		--> For example (see '_baygaud_params.py' in 'src'),
-
-		|| Set data directory; segment output directory in _baygaud_params.py in 'src'
-		'wdir':'/home/seheon/research/code/_python/baygaud_py/baygaud_PI/demo/test_cube',
-		'_segdir':'segmts',
-		'_combdir':'segmts_merged_n_classified'
-
-		|| Input HI data cube (required)
-		'input_datacube':'ngc2403.regrid.testcube.0.fits'
-
-		|| 2D mask map (if not available, put blank)
-		'_cube_mask':'Y', # Y(if available) or N(if not)
-		'_cube_mask_2d':'2403_mosaic_5kms_r05_HI_mwfilt_mask-2d.fits'
-
-		|| Bulk model VF (if not available, put blank)
-		'_bulk_ref_vf':'NGC_4826_NA_MOM0_THINGS.dim.mask.fits'
-
-		|| Bulk velocity-limit 2D map (if not available, put blank)
-		'_bulk_delv_limit':'NGC_4826_NA_MOM0_THINGS.dim.mask.fits'
+		|| Input HI velocity field (required)
+		'input_vf':'test1.fits'
 
 
-2. Setting up baygaud-PI parameters
+2. Setting up 2dbat-PI parameters
 
-		--> Open ‘_baygaud_params.py’ file using vim or other text editors. Update keywords upon
+		--> Open ‘_2bdaat_params.py’ file using vim or other text editors. Update keywords upon
 		your system accordingly. Find "UPDATE HERE" lines and edit them as yours. Short descriptions
 		(recommendation) are given below.
 		
-		|| In RED : should be updated upon your sample galaxy
-		|| In BLUE : should be updated upon your computer
-		|| In GREEN : can be adjusted for improving the performance (speed issues etc.)
-		|| In YELLOW : <--- UPDATE HERE : should be adjusted
-		--> For a quick test, try a small section like,
-		# district
-		'naxis1_s0':20,
-		'naxis1_e0':24,
-		'naxis2_s0':20,
-		'naxis2_e0':24,
+		'_vlos_lower'
+		'_vlos_upper'
+		'ring_w'
+		'free_angle':0
+		'cosine_weight_power':0
+		'xpos_bounds_width':2 <--- ring_w / 2. (recommended)
+		'ypos_bounds_width':2 <--- ring_w / 2. (recommended)
+
+		# ----------------------------------
+		# PA-BS
+		'n_pa_bs_knots_inner':0,
+		'k_pa_bs':0, # 1:linear, 2:quadractic, 3:cubic
+
+
+		# ----------------------------------
+		# INCL-BS
+		'n_incl_bs_knots_inner':0,
+		'k_incl_bs':0, # 1:linear, 2:quadractic, 3:cubic
+
+
+		# ----------------------------------
+		# VROT-BS
+		'n_vrot_bs_knots_inner':0,
+		'k_vrot_bs':3, # 1:linear, 2:quadractic, 3:cubic
+
+		# grids
+		'x_grid_2d':1, # <---- recommended
+		'y_grid_2d':1, # <---- recommended
+		'x_grid_tr':1, # <---- recommended
+		'y_grid_tr':1, # <---- recommended
+
+		#  ______________________________________________________  #
+		# [______________________________________________________] #
+		# parallellisation parameters
+		'num_cpus_tr_ray':1,  # <---- recommended (num_cpus_tr_ray x num_cpus_tr_dyn = num_cpus_2d_dyn)
+		'num_cpus_tr_dyn':8,  # <---- recommended 
+		'num_cpus_2d_dyn':8,  # <---- UPDATE HERE (MAXIMUM NUMBER OF CPUs)
+
 		
-![Screen Shot 2023-02-03 at 11 39 05 PM](https://user-images.githubusercontent.com/100483350/216631276-20c9c5ba-a4d7-4ab1-bffb-5f018ee54964.png)
-
-![Screen Shot 2023-02-03 at 11 39 12 PM](https://user-images.githubusercontent.com/100483350/216631310-e4fd11d9-1e39-4726-a7cd-a34dd1dba088.png)
-
-![Screen Shot 2023-02-03 at 11 39 20 PM](https://user-images.githubusercontent.com/100483350/216631330-681baab0-46e0-4ff8-8cb8-7ff0242400c7.png)
-
-![Screen Shot 2023-02-03 at 11 39 28 PM](https://user-images.githubusercontent.com/100483350/216631379-95703f0f-96fc-46a4-8330-ea4f16b7d461.png)
-
-![Screen Shot 2023-02-03 at 11 39 34 PM](https://user-images.githubusercontent.com/100483350/216631399-29b2946e-611f-4b97-ab85-71af7d05c846.png)
-
 
 	
-3. Running baygaud.py
+3. Running _2dbat.py
 
-		--> You can run 'baygaud.py' without arguments, which will load the 'default' baygaud parameters as given
-		in '_baygaud_params.py', or you can run it with your own baygaud parameter yaml file (!!! <-- RECOMMENDED !!!).
-		For example, you can copy a template file '_baygaud_params.ngc2403.yaml' in the baygaud-PI directory and
-		edit it for your target galaxy as in '_baygaud_params.py' but following yaml syntax (see '_baygaud_params.ngc2403.yaml').
-		
-		(baygaud) [seheon@sejong00] python3.10 baygaud.py
-		or 
-		(baygaud) [seheon@sejong00] python3.10 baygaud.py _baygaud_params.ngc2403.yaml
+		--> You can run '_2dbat.py' with a running-number.
+
+		(2dbat-PI) [seheon@sejong00] python3 _2dbat.py 1
 
 		--> Check the running processes (utilizing multi-cores) on the machine.
-		--> Check the output directory where the baygaud fitting results are stored in binary format.
+		--> Check the output directory where the 2dbat fitting results are stored.
 		
-		# Output directory in ‘_baygaud_params.py’
+		# Output directory in ‘_2dbat_params.py’
 		
-		_segdir: 'segmts'
-
-		--> In the _segdir directory, all of the Gaussian fit results for each sub-cube (segment, xN--ys:ye--vel)
-		are saved in binary format. For example,
-		
-			G03_x10.ys10ye390.npy <-- python binary format
-
-		|| G03 : max_ngauss=3
-		|| x10 : column x-number=10 ← segment info
-		|| ys10ye390 : row range, ys(start)=10 ~ ye(end)=390  ← segment info
-
-		--> In the event that the baygaud process stops unexpectedly for any reason, the completed analysis
-		results for segments are saved. As a result, you can resume Baygaud from that point, but you need
-		to make adjustments:
-
-		'naxis1_s0= xxx'
-		'naxis1_e0= xxx'
-		'naxis2_s0= xxx'
-		'naxis2_e0= xxx'
-
-		in '_baygaud_params.py' accordingly not to repeat the segments already processed.
-
-
-4. Running baygaud_classify.py
-
-		--> After completing some or all of the Baygaud processes, you can combine the segments to create 2D FITS maps.
-		--> As for 'baygaud.py', the same options are available. 'baygaud_classify.py' can be run either with
-		no arguments to use the default baygaud parameters, or with a specified baygaud parameter file. 
-		
-		--> If you simply run the script without any arguments. This will print out the usage.
-		(baygaud) [seheon@sejong00] python3.10 baygaud_classify.py
-		--> 
-		___________________________________________________________________________________________
-
- 		:: baygaud_classify.py usage ::
-
- 		usage-1: running baygaud_classify.py with baygaud_params file
- 		> python3 baygaud_classify.py [ARG1: _baygaud_params.yaml] [ARG2: output-index, 1, 2, ...]
-		 e.g.,
-		 > python3 baygaud_classify.py _baygaud_params.ngc2403.yaml 1
-		-------------------------------------------------------------------------------------------
- 		usage-2: running baygaud_classify.py with the DEFAULT baygaud_params file
-  	      	: the DEFAULT baygaud_params file: _baygaud_params.py
-		 > python3 baygaud_classify.py [ARG1: output-index, 1, 2, ...]
- 		e.g.,
- 		> python3 baygaud_classify.py 1
-		___________________________________________________________________________________________
-		
-	
-		
-		(baygaud) [seheon@sejong00] python3.10 baygaud_classify.py 1
-		or
-		(baygaud) [seheon@sejong00] python3.10 baygaud_classify.py _baygaud_params.ngc2403.yaml 1 (<-- RECOMMENDED)
-		--> The latter option will be useful when running baygaud-PI for a number of galaxies,
-		for which the _baygaud_params file has been specified.
-		
-		--> This routine merges the segmented Baygaud output (in binary format) to create 2D maps
-		in FITS format that contain the profile decomposition results. It also generates combined
-		baygaud fit results in both FITS and binary formats, such as 'baygaud_gfit_results.fits'
-		and 'baygaud_gfit_results.npy'. Either file can be saved for backup purposes.
-
-		--> In the working directory, as in _baygaud_params.py above,
-		
-		# working directory where the input data cube is
-		wdir: '/home/seheon/research/code/_python/baygaud_py/baygaud_PI/demo/test_cube'
-		
-		--> A directory named 'segmts_merged_n_classified.1' will be created where the decomposed Gaussian components
-		are stored. These Gaussian components (such as bulk, cool, warm, hot, non_bulk, psgfit, hvc and sgfit,
-		or any others defined by the user) are classified based on their kinematic properties set in the
-		'_baygaud_params.py' file.
-		
-		bulk
-		cool
-		hot
-		ngfit
-		non_bulk
-		psgfit
-		sgfit
-		warm
-		hvc
-
-
-5. Running baygaud_viewer.py
-
-		--> You can view the results of baygaud's multi-Gaussian profile analysis for individual
-		velocity profiles using the 'baygaud_viewer.py' code. This code reads the optimal number
-		of Gaussian profiles derived by 'baygaud_classify.py' and displays the decomposed Gaussian
-		components overlaid on each spectral line.
-		
-		--> If you simply run the script without any arguments, this will print out the usage.
-		(baygaud) [seheon@sejong00] python3.10 baygaud_viewer.py
-		--> 
-		___________________________________________________________________________________________
-
- 		:: baygaud_viewer.py usage ::
-
- 		usage-1: running baygaud_viewer.py with baygaud_params file
-		 > python3 baygaud_viewer.py [ARG1: _baygaud_params.yaml] [ARG2: output-index, 1, 2, ...]
- 		output-index is the postfix number of the baygaud segments merged directory.
-		 i.e., 'segmts_merged_n_classified.[output-index]' in 'wdir'
- 		e.g.,
- 		> python3 baygaud_viewer.py _baygaud_params.ngc2403.yaml 1
-		-------------------------------------------------------------------------------------------
-		 usage-2: running baygaud_viewer.py with the DEFAULT baygaud_params file
- 		       : the DEFAULT baygaud_params file: _baygaud_params.py
- 		> python3 baygaud_viewer.py [ARG1: output-index, 1, 2, ...]
- 		e.g.,
- 		> python3 baygaud_viewer.py 1
-		___________________________________________________________________________________________
-
-
-		(baygaud) [seheon@sejong00] python3.10 baygaud_viewer.py 1
-		or
-		(baygaud) [seheon@sejong00] python3.10 baygaud_viewer.py _baygaud_params.ngc2403.yaml 1 (<-- RECOMMENDED)
-
-		
-![Screen Shot 2023-02-05 at 12 19 38 AM](https://user-images.githubusercontent.com/100483350/216775296-c040f123-9062-4c38-8a53-fd5e60467d8a.png)
-
-![Screen Shot 2023-02-05 at 12 17 12 AM](https://user-images.githubusercontent.com/100483350/216775302-55a6b2b3-390e-40d1-a0b4-4a2277611616.png)
-
-![Screen Shot 2023-02-05 at 12 16 29 AM](https://user-images.githubusercontent.com/100483350/216775309-f2831851-2554-4e8d-82e6-cceadd9f733b.png)
-
-![Screen Shot 2023-02-05 at 12 15 55 AM](https://user-images.githubusercontent.com/100483350/216775323-2ebc07a7-f6ca-4ec1-980f-e11b03d1c328.png)
-
-
-		When a 2D map (such as the single Gaussian velocity field, velocity dispersion, integrated
-		intensity, N-Gauss, or peak flux S/N) extracted by baygaud-PI (selected in the menu) is displayed,
-		you can move your mouse cursor over the map to locate a specific spectral line. 
-		You can also zoom-in or -out a specific region by scrollong the mouse wheel.
-
 
 # Cite
 
