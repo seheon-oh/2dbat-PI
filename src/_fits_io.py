@@ -1,13 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#|-----------------------------------------|
-#| _fits_io.py
-#|-----------------------------------------|
-#| by Se-Heon Oh
-#| Dept. of Physics and Astronomy
-#| Sejong University, Seoul, South Korea
-#|-----------------------------------------|
+
 
 
 import numpy as np
@@ -377,26 +369,26 @@ def trfit_ring_by_ring(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, 
     _vrot = _params['_vrot_init']
     _vrad = _params['_vrad_init']
 
-    _ring_t = np.zeros(nrings+2, dtype=np.float)
-    _sigma_t = np.zeros(nrings+2, dtype=np.float)
-    _xpos_t = np.zeros(nrings+2, dtype=np.float)
-    _ypos_t = np.zeros(nrings+2, dtype=np.float)
-    _vsys_t = np.zeros(nrings+2, dtype=np.float)
-    _pa_t = np.zeros(nrings+2, dtype=np.float)
-    _incl_t = np.zeros(nrings+2, dtype=np.float)
-    _vrot_t = np.zeros(nrings+2, dtype=np.float)
-    _vrad_t = np.zeros(nrings+2, dtype=np.float)
+    _ring_t = np.zeros(nrings+2, dtype=np.float64)
+    _sigma_t = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_t = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_t = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_t = np.zeros(nrings+2, dtype=np.float64)
+    _pa_t = np.zeros(nrings+2, dtype=np.float64)
+    _incl_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_t = np.zeros(nrings+2, dtype=np.float64)
 
-    _sigma_et = np.zeros(nrings+2, dtype=np.float)
-    _xpos_et = np.zeros(nrings+2, dtype=np.float)
-    _ypos_et = np.zeros(nrings+2, dtype=np.float)
-    _vsys_et = np.zeros(nrings+2, dtype=np.float)
-    _pa_et = np.zeros(nrings+2, dtype=np.float)
-    _incl_et = np.zeros(nrings+2, dtype=np.float)
-    _vrot_et = np.zeros(nrings+2, dtype=np.float)
-    _vrad_et = np.zeros(nrings+2, dtype=np.float)
+    _sigma_et = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_et = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_et = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_et = np.zeros(nrings+2, dtype=np.float64)
+    _pa_et = np.zeros(nrings+2, dtype=np.float64)
+    _incl_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_et = np.zeros(nrings+2, dtype=np.float64)
 
-    _nrings_reliable_t = np.zeros(nrings+2, dtype=np.float)
+    _nrings_reliable_t = np.zeros(nrings+2, dtype=np.float64)
 
 
     _input_vf_id = ray.put(_input_vf)
@@ -555,29 +547,29 @@ def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, 
     _vrot = _params['_vrot_init']
     _vrad = _params['_vrad_init']
 
-    _ring_t = np.zeros(nrings+2, dtype=np.float)
+    _ring_t = np.zeros(nrings+2, dtype=np.float64)
 
-    _sigma_t = np.zeros(nrings+2, dtype=np.float)
-    _xpos_t = np.zeros(nrings+2, dtype=np.float)
-    _ypos_t = np.zeros(nrings+2, dtype=np.float)
-    _vsys_t = np.zeros(nrings+2, dtype=np.float)
-    _pa_t = np.zeros(nrings+2, dtype=np.float)
-    _incl_t = np.zeros(nrings+2, dtype=np.float)
-    _vrot_t = np.zeros(nrings+2, dtype=np.float)
-    _vrad_t = np.zeros(nrings+2, dtype=np.float)
+    _sigma_t = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_t = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_t = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_t = np.zeros(nrings+2, dtype=np.float64)
+    _pa_t = np.zeros(nrings+2, dtype=np.float64)
+    _incl_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_t = np.zeros(nrings+2, dtype=np.float64)
 
-    _sigma_et = np.zeros(nrings+2, dtype=np.float)
-    _xpos_et = np.zeros(nrings+2, dtype=np.float)
-    _ypos_et = np.zeros(nrings+2, dtype=np.float)
-    _vsys_et = np.zeros(nrings+2, dtype=np.float)
-    _pa_et = np.zeros(nrings+2, dtype=np.float)
-    _incl_et = np.zeros(nrings+2, dtype=np.float)
-    _vrot_et = np.zeros(nrings+2, dtype=np.float)
-    _vrad_et = np.zeros(nrings+2, dtype=np.float)
+    _sigma_et = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_et = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_et = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_et = np.zeros(nrings+2, dtype=np.float64)
+    _pa_et = np.zeros(nrings+2, dtype=np.float64)
+    _incl_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_et = np.zeros(nrings+2, dtype=np.float64)
 
-    _nrings_reliable_t = np.zeros(nrings+2, dtype=np.float)
-    _npoints_in_a_ring_total = np.zeros(nrings+2, dtype=np.float)
-    _npoints_in_a_ring = np.zeros(nrings+2, dtype=np.float)
+    _nrings_reliable_t = np.zeros(nrings+2, dtype=np.float64)
+    _npoints_in_a_ring_total = np.zeros(nrings+2, dtype=np.float64)
+    _npoints_in_a_ring = np.zeros(nrings+2, dtype=np.float64)
 
     _input_vf_id = ray.put(_input_vf)
     _tr_model_vf_id = ray.put(_tr_model_vf)
@@ -1181,7 +1173,7 @@ def trfit_2d(_input_vf, _tr_model_vf, _wi_2d, _params, tr_params_bounds, nrings_
     npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring, _wt_2d = define_tilted_ring(_input_vf, _xpos, _ypos, _pa, _incl, ri, ro, side, _params)
 
     n_ij_aring = _ij_aring.shape[0]
-    r_galaxy_plane = np.zeros(n_ij_aring, dtype=np.float)
+    r_galaxy_plane = np.zeros(n_ij_aring, dtype=np.float64)
 
     _trfit_results, _n_dim, fit_opt_2d, std_resample_run = run_nested_sampler_trfit_2d(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _params, tr_params_bounds, nrings_reliable, r_galaxy_plane, tck_vrot_bs_init_from_trfit, tck_pa_bs_init_from_trfit, tck_incl_bs_init_from_trfit, _2dbat_run_i)
 

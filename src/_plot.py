@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#|-----------------------------------------|
+#| _plot.py
+#|-----------------------------------------|
+#| by Se-Heon Oh
+#| Dept. of Physics and Astronomy
+#| Sejong University, Seoul, South Korea
+#|-----------------------------------------|
+
+#|-----------------------------------------|
 
 import matplotlib
 from mpl_toolkits.mplot3d import Axes3D

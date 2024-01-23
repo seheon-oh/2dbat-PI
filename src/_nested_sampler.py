@@ -1,18 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#|-----------------------------------------|
-#| _nested_sampler.py
-#|-----------------------------------------|
-#|
-#| version history
-#| v1.0 (2022 Dec 25)
-#|
-#|-----------------------------------------|
-#| by Se-Heon Oh
-#| Dept. of Physics and Astronomy
-#| Sejong University, Seoul, South Korea
-#|-----------------------------------------|
 
 import time, sys, os
 import io
@@ -111,7 +97,7 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
 
     naxis1 = _params['naxis1']
     naxis2 = _params['naxis2']
-    _wt_2d = np.full((naxis2, naxis1), fill_value=0, dtype=np.float)
+    _wt_2d = np.full((naxis2, naxis1), fill_value=0, dtype=np.float64)
 
     x0 = 0
     y0 = 0
@@ -471,7 +457,7 @@ def solve_r_galaxy_plane_jit_pa_const_incl_const_test(_x, _y, _xpos, _ypos, _pa,
     del_x = _x - _xpos
     del_y = _y - _ypos
 
-    solutions = np.empty_like(del_x, dtype=float)
+    solutions = np.empty_like(del_x, dtype=np.float64)
 
     for i in range(del_x.shape[0]):
         solutions[i] = find_root_pa_const_incl_const(i, deg_to_rad, _pa, _incl, del_x, del_y, _r_galaxy_plane_i_init, _r_max)
@@ -513,7 +499,7 @@ def solve_r_galaxy_plane_gpu(_x, _y, _xpos, _ypos, tck_pa_bs, _incl, _r_galaxy_p
         solutions[idx] = find_root_cpu(idx, deg_to_rad, x_values, bspline_values_pa, _incl, del_x, del_y, _r_galaxy_plane_i_init, _r_max)
 
 def solve_r_galaxy_plane_jit_pa_bs_incl_const_test_gpu(_x, _y, _xpos, _ypos, tck_pa_bs, _incl, _r_galaxy_plane_i_init, _r_max):
-    solutions = np.empty_like(_x, dtype=float)
+    solutions = np.empty_like(_x, dtype=np.float64)
     threadsperblock = 12
     blockspergrid = (_x.size + (threadsperblock - 1)) // threadsperblock
     solve_r_galaxy_plane_gpu[blockspergrid, threadsperblock](_x, _y, _xpos, _ypos, tck_pa_bs, _incl, _r_galaxy_plane_i_init, _r_max, solutions)
@@ -546,7 +532,7 @@ def find_root_pa_bs_incl_const(i, deg_to_rad, x_values, bspline_values_pa, _incl
             if _a < 0:
                 _a = 0
             _b += 0.2 * abs(_b)
-    return np.nan
+    return np.nan  # 최대 반복 횟수 동안 근을 찾지 못한 경우
 
 def solve_r_galaxy_plane_jit_pa_bs_incl_const_test(_x, _y, _xpos, _ypos, tck_pa_bs, _incl, _r_galaxy_plane_i_init, _r_max):
     deg_to_rad = np.pi / 180.0
@@ -559,7 +545,7 @@ def solve_r_galaxy_plane_jit_pa_bs_incl_const_test(_x, _y, _xpos, _ypos, tck_pa_
     del_x = _x - _xpos
     del_y = _y - _ypos
 
-    solutions = np.empty_like(del_x, dtype=float)
+    solutions = np.empty_like(del_x, dtype=np.float64)
 
     for i in range(del_x.shape[0]):
         solutions[i] = find_root_pa_bs_incl_const(i, deg_to_rad, x_values, bspline_values_pa, _incl, del_x, del_y, _r_galaxy_plane_i_init, _r_max)
@@ -605,7 +591,7 @@ def solve_r_galaxy_plane_jit_pa_const_incl_bs_test(_x, _y, _xpos, _ypos, _pa, tc
     del_x = _x - _xpos
     del_y = _y - _ypos
 
-    solutions = np.empty_like(del_x, dtype=float)
+    solutions = np.empty_like(del_x, dtype=np.float64)
 
     for i in range(del_x.shape[0]):
         solutions[i] = find_root_pa_const_incl_bs(i, deg_to_rad, x_values, _pa, bspline_values_incl, del_x, del_y, _r_galaxy_plane_i_init, _r_max)
@@ -652,7 +638,7 @@ def solve_r_galaxy_plane_jit_pa_bs_incl_bs_test(_x, _y, _xpos, _ypos, tck_pa_bs,
     del_x = _x - _xpos
     del_y = _y - _ypos
 
-    solutions = np.empty_like(del_x, dtype=float)
+    solutions = np.empty_like(del_x, dtype=np.float64)
 
     for i in range(del_x.shape[0]):
         solutions[i] = find_root_pa_bs_incl_bs(i, deg_to_rad, x_values, bspline_values_pa, bspline_values_incl, del_x, del_y, _r_galaxy_plane_i_init, _r_max)
@@ -2167,9 +2153,9 @@ def extract_vrot_bs_tr_rings_given_dyn_params(_input_vf_nogrid, _input_vf_tofit_
 
     nrings_reliable = 2*_params['nrings_reliable']
     ring_w = _params['ring_w']
-    _tr_rings = np.arange(0, nrings_reliable*ring_w, ring_w, dtype=np.float)
-    _vrot_bs = np.zeros(nrings_reliable, dtype=np.float)
-    _vrot_bs_e = np.zeros(nrings_reliable, dtype=np.float)
+    _tr_rings = np.arange(0, nrings_reliable*ring_w, ring_w, dtype=np.float64)
+    _vrot_bs = np.zeros(nrings_reliable, dtype=np.float64)
+    _vrot_bs_e = np.zeros(nrings_reliable, dtype=np.float64)
 
     _tr_rings = np.where(_tr_rings < _params['r_galaxy_plane_e'], _tr_rings, _params['r_galaxy_plane_e'])
 
@@ -2996,8 +2982,8 @@ def run_nested_sampler_trfit_2d(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _par
 
     fit_opt_2d = np.zeros(8, dtype=np.int32)
 
-    _ring_ns_t = np.zeros(_params['nrings']+2, dtype=np.float)
-    _vrot_ns_t = np.zeros(_params['nrings']+2, dtype=np.float)
+    _ring_ns_t = np.zeros(_params['nrings']+2, dtype=np.float64)
+    _vrot_ns_t = np.zeros(_params['nrings']+2, dtype=np.float64)
 
     n_coeffs_vrot_bs, tck_vrot_bs = bspline_ncoeffs_tck(_params, 'vrot', _params['nrings_intp'])
     n_coeffs_pa_bs, tck_pa_bs = bspline_ncoeffs_tck(_params, 'pa', _params['nrings_intp'])
@@ -3067,7 +3053,6 @@ def run_nested_sampler_trfit_2d(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _par
 
 
             _dir_2dbat_PI_output = _params['wdir'] + '/' + _params['_2dbatdir'] + ".%d" % _2dbat_run_i
-
             if not os.path.exists("%s" % _dir_2dbat_PI_output):
                 make_dirs("%s" % _dir_2dbat_PI_output)
 

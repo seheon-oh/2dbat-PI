@@ -615,7 +615,7 @@ def main():
     if not os.path.exists("%s" % _dir_2dbat_PI_output):
         make_dirs("%s" % _dir_2dbat_PI_output)
 
-    with open(f'{_dir_2dbat_PI_output}/2dbat_PI_tr_final.txt', 'w') as file:
+    with open(f'{_dir_2dbat_PI_output}/2dbat_trfit_temp.txt', 'w') as file:
         header = "! radius [pix]   sigma [km/s]     sigma-e [km/s]   xpos [pix]       xpos-e [pix]     ypos [pix]       ypos-e [pix]     vsys [km/s]      vsys-e [km/s]    pa [deg]         pa-e [deg]       incl [deg]       incl-e [deg]     \
                vrot_bs [km/s]    vrot_bs-e [km/s]     vrot_b [km/s]      vrot_b-e [km/s]    vrot_a [km/s]      vrot_a-e [km/s]     vrot_r [km/s]      vrot_r-e [km/s]      vrad [km/s]     vrad-e [km/s]      npoints_total-b [pixs]     npoints_available-b [pixs]    npoints_total-a [pixs]     npoints_available-a [pixs]     npoints_total-r [pixs]     npoints_available-r [pixs]\n"
         file.write(header)
@@ -646,16 +646,24 @@ def main():
             file.write(line)
 
 
-    with open(f'{_dir_2dbat_PI_output}/2dbat_PI_tr_final.txt', 'r') as file:
+    with open(f'{_dir_2dbat_PI_output}/2dbat_trfit_temp.txt', 'r') as file:
         plot_2dbat(file, _input_vf_tofit_grid1, bsfit_vf, trfit_vf, _dir_2dbat_PI_output+'/'+'2dbat_plot.png', _params, _2dbat_run_i)
 
-
-    print("duration =", datetime.now() - start)
     ray.shutdown()
     sys.exit()
 
 
 
+ 
+
+
+
+
+
+
+
+
+    print("duration =", datetime.now() - start)
 
 if __name__ == '__main__':
     main()

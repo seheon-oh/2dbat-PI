@@ -43,9 +43,7 @@ def default_params():
 
     '_2dbatdir':'output',
 
- 
-
-    'input_vf':'test1.fits',  # <---- UPDATE HERE : 'input_vf' is in 'wdir'
+    'input_vf':'test1.fits',  # <---- UPDATE HERE
 
     '_vlos_lower':-10000,  # <---- UPDATE HERE in km/s
     '_vlos_upper':10000,  # <---- UPDATE HERE in km/s
@@ -135,8 +133,8 @@ def default_params():
     '_vrot_init':30,
     '_vrad_init':0,
 
-    'x_grid_2d':3, # <---- UPDATE HERE
-    'y_grid_2d':3, # <---- UPDATE HERE
+    'x_grid_2d':1, # <---- UPDATE HERE
+    'y_grid_2d':1, # <---- UPDATE HERE
     'x_grid_tr':1, # <---- UPDATE HERE
     'y_grid_tr':1, # <---- UPDATE HERE
 
@@ -182,8 +180,8 @@ def default_params():
 
     'ncolm_per_core':'',
     'nsegments_nax2':'',
-    'num_cpus_tr_ray':2,  # <---- UPDATE HERE
-    'num_cpus_tr_dyn':4,  # <---- UPDATE HERE
+    'num_cpus_tr_ray':1,  # <---- UPDATE HERE
+    'num_cpus_tr_dyn':8,  # <---- UPDATE HERE
     'num_cpus_2d_dyn':8,  # <---- UPDATE HERE
     }
     
