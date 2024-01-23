@@ -1,19 +1,16 @@
-# baygaud-PI 
-	- BAYesian GAUssian Decomposer: decomposing a spectral line profile into multiple Gaussian components using Bayesian analysis
-	- Version 1.0.0 (30 Sept 2022)
+# 2dbat-PI 
+	- 2DBAT-PI: 2D Bayesian Automated Tiltedringfitter
+	- Version 1.0.0 (24 Jan 2024)
 	- by Se-Heon Oh (Department of Physics and Astronomy, Sejong University, Seoul, Korea)
 	
-	baygaud-PI is a new tool for decomposing a spectral line profile with multiple Gaussian components based on Bayesian nested sampling.
-	One of its unique features is that it determines the optimal number of Gaussian components for a given line profile by using Bayes
-	factor statistics. This allows for the extraction of various Gaussian 2D maps for the line-of-sight velocity profiles of an HI data
-	cube of a galaxy, which can then be utilized in any post-processing of HI kinematic analysis, such as deriving the galaxy rotation curve.
+	2dbat-PI is a new tool for deriving galaxy rotation curve based on Bayesian nested sampling. 
 
 # Prerequisite
 
 	- Python3.10
 	- Python3 virtual environment module: venv (normally, venv is installed along with python3)
 	- The latest version of dynesty 2.0.3 will be installed for Bayesian analysis utilizing nested sampling.
-	- Tested for Ubuntu 18.04 LT and macOS Monterey 12.6 on Apple M1
+	- Tested for Ubuntu 18.04 LT and macOS Monterey 12.6 on Apple M2
 
 # Installation
 
