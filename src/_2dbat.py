@@ -649,22 +649,13 @@ def main():
     with open(f'{_dir_2dbat_PI_output}/2dbat_PI_tr_final.txt', 'r') as file:
         plot_2dbat(file, _input_vf_tofit_grid1, bsfit_vf, trfit_vf, _dir_2dbat_PI_output+'/'+'2dbat_plot.png', _params, _2dbat_run_i)
 
+
+    print("duration =", datetime.now() - start)
     ray.shutdown()
     sys.exit()
 
 
 
- 
-
-
-
-
-
-    _nparams = 3*max_ngauss + 2
-
-
-
-    print("duration =", datetime.now() - start)
 
 if __name__ == '__main__':
     main()

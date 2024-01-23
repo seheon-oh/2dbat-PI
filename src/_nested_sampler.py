@@ -546,7 +546,7 @@ def find_root_pa_bs_incl_const(i, deg_to_rad, x_values, bspline_values_pa, _incl
             if _a < 0:
                 _a = 0
             _b += 0.2 * abs(_b)
-    return np.nan  # 최대 반복 횟수 동안 근을 찾지 못한 경우
+    return np.nan
 
 def solve_r_galaxy_plane_jit_pa_bs_incl_const_test(_x, _y, _xpos, _ypos, tck_pa_bs, _incl, _r_galaxy_plane_i_init, _r_max):
     deg_to_rad = np.pi / 180.0
@@ -3067,6 +3067,10 @@ def run_nested_sampler_trfit_2d(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _par
 
 
             _dir_2dbat_PI_output = _params['wdir'] + '/' + _params['_2dbatdir'] + ".%d" % _2dbat_run_i
+
+            if not os.path.exists("%s" % _dir_2dbat_PI_output):
+                make_dirs("%s" % _dir_2dbat_PI_output)
+
             dyn_sampler_bin = 'dyn_sample.pkl'  # file name
             with open(_dir_2dbat_PI_output + '/' + dyn_sampler_bin, 'wb') as file:
                 pickle.dump(sampler.results, file)

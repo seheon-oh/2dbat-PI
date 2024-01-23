@@ -37,15 +37,15 @@ def read_configfile(configfile):
 
 def default_params():
     _params = {
-    'main_2dbat':'/Users/seheon/research/projects/2dbat.pi/baygaud-PI/src',  # <---- UPDATE HERE
+    'main_2dbat':'/Users/seheon/research/projects/2dbat.pi/2dbat-PI/src',  # <---- UPDATE HERE
 
-    'wdir':'/Users/seheon/research/projects/2dbat.pi/baygaud-PI/demo/test_cube',  # <---- UPDATE HERE
+    'wdir':'/Users/seheon/research/projects/2dbat.pi/2dbat-PI/src/analysis',  # <---- UPDATE HERE
 
-    '_2dbatdir':'2dbat_output',
+    '_2dbatdir':'output',
 
  
 
-    'input_vf':'vfs/test1.fits',  # <---- UPDATE HERE
+    'input_vf':'test1.fits',  # <---- UPDATE HERE : 'input_vf' is in 'wdir'
 
     '_vlos_lower':-10000,  # <---- UPDATE HERE in km/s
     '_vlos_upper':10000,  # <---- UPDATE HERE in km/s
