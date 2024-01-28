@@ -171,8 +171,10 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
     if side == -1: # approaching side
         npoints_in_a_ring_total_including_blanks_app = np.sum((r > ri_deg) & (r < ro_deg) & (np.fabs(theta) >= 90.0))
     elif side == 1: # receding side
-        npoints_in_a_ring_total_including_blanks_rec = np.sum((r > ri_deg) & (r < ro_deg) & (np.fabs(theta) < 90.0))
+        npoints_in_a_ring_total_including_blanks_rec = np.sum((r > ri_deg) & (r < ro_deg) & (np.fabs(theta) <= 90.0))
     elif side == 0: # both sides
+        npoints_in_a_ring_total_including_blanks_both = np.sum((r > ri_deg) & (r < ro_deg))
+    elif side == 999: # both sides : trfit_2d
         npoints_in_a_ring_total_including_blanks_both = np.sum((r > ri_deg) & (r < ro_deg))
 
 
@@ -208,6 +210,9 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
     elif side == 0: # both sides
         weighted_pixels = valid_points & (r > ri_deg) & (r < ro_deg) & (costh > sine_free_angle)
         npoints_in_ring_t_both = np.sum(weighted_pixels)
+    elif side == 999: # both sides : trfit_2d
+        weighted_pixels = valid_points & (r > ri_deg) & (r < ro_deg)
+        npoints_in_ring_t_both = np.sum(weighted_pixels)
 
 
     i0, j0 = np.meshgrid(range(i0_lo, i0_up), range(j0_lo, j0_up), indexing='ij')
@@ -226,6 +231,7 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
     costh = np.abs(np.cos(deg_to_rad * theta))  # in radians
     cosine_weight = costh ** _params['cosine_weight_power']
 
+
     selected_points = valid_points & (r > ri_deg) & (r < ro_deg) & (costh > sine_free_angle)
 
     if side == -1: # approaching side
@@ -234,6 +240,8 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
         selected_points = valid_points & (r > ri_deg) & (r < ro_deg) & (costh > sine_free_angle) & (np.fabs(theta) < 90.0)
     elif side == 0: # both sides
         selected_points = valid_points & (r > ri_deg) & (r < ro_deg) & (costh > sine_free_angle)
+    elif side == 999: # both sides : trfit_2d
+        selected_points = valid_points & (r > ri_deg) & (r < ro_deg)
 
     i0_selected = i0[selected_points]
     j0_selected = j0[selected_points]
@@ -247,6 +255,8 @@ def define_tilted_ring(_input_vf, xpos, ypos, pa, incl, ri, ro, side, _params):
     elif side == 1: # receding
         return npoints_in_a_ring_total_including_blanks_rec, npoints_in_ring_t_rec, ij_tilted_ring, _wt_2d
     elif side == 0: # both
+        return npoints_in_a_ring_total_including_blanks_both, npoints_in_ring_t_both, ij_tilted_ring, _wt_2d
+    elif side == 999: # both : trfit_2d
         return npoints_in_a_ring_total_including_blanks_both, npoints_in_ring_t_both, ij_tilted_ring, _wt_2d
 
 
@@ -1181,18 +1191,20 @@ def loglike_trfit(*args):
     sigma = args[0][0] # loglikelihoood sigma: dynesty default params[0]
 
 
-    tr_model_vf_new = derive_vlos_model(args[0], args[2], args[4], args[5], args[6])
+    tr_model_vf = derive_vlos_model(args[0], args[2], args[4], args[5], args[6])
 
 
 
 
 
     res = np.array([np.where( \
-                        (tr_model_vf_new > args[6]['_vlos_lower']) & \
-                        (tr_model_vf_new < args[6]['_vlos_upper']) & \
-                        (args[1] > args[6]['_vlos_lower']) & \
-                        (args[1] < args[6]['_vlos_upper']),
-                        (tr_model_vf_new - args[1]), 0.0)])[0]
+                        ((tr_model_vf > args[6]['_vlos_lower']) & \
+                        (tr_model_vf < args[6]['_vlos_upper'])) & \
+                        ((args[3] > 0) & \
+                        (args[3] < 100)) & \
+                        ((args[1] > args[6]['_vlos_lower']) & \
+                        (args[1] < args[6]['_vlos_upper'])),
+                        (tr_model_vf - args[1]), 0.0)])[0]
     
     npoints = np.count_nonzero(res)
     loglike = -0.5 * (
@@ -1250,15 +1262,15 @@ def loglike_trfit_2d(*args):
 
 
     res = np.array([np.where( \
-                        (tr_model_vf > args[6]['_vlos_lower']) & \
-                        (tr_model_vf < args[6]['_vlos_upper']) & \
-                        (args[1] > args[6]['_vlos_lower']) & \
-                        (args[1] < args[6]['_vlos_upper']),
+                        ((tr_model_vf > args[6]['_vlos_lower']) & \
+                        (tr_model_vf < args[6]['_vlos_upper'])) & \
+                        ((args[1] > args[6]['_vlos_lower']) & \
+                        (args[1] < args[6]['_vlos_upper'])),
                         (tr_model_vf - args[1]), 0.0)])[0]
     
     npoints = np.count_nonzero(res)
     loglike = -0.5 * (
-        np.sum(( (res / sigma) * args[9] ) ** 2) + npoints * np.log(2 * np.pi * sigma**2))
+        np.sum((res / sigma) ** 2) + npoints * np.log(2 * np.pi * sigma**2))
 
     return loglike 
 
@@ -2046,6 +2058,7 @@ def make_vlos_model_vf_given_dyn_params(_input_vf_nogrid, _input_vf_tofit_2d, _w
 
     _naxis1 = _params['naxis1']
     _naxis2 = _params['naxis2']
+    ring_w = _params['ring_w']
     _input_nogrid_m_trfit_vf = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
     _input_m_bsfit_vf_grid = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
 
@@ -2060,7 +2073,7 @@ def make_vlos_model_vf_given_dyn_params(_input_vf_nogrid, _input_vf_tofit_2d, _w
         n_coeffs_vrot_bs, tck_vrot_bs, tck_vrot_bs_e, \
         n_coeffs_vrad_bs, tck_vrad_bs, tck_vrad_bs_e = extract_tr2dfit_params_part_for_make_model_vf(_tr2dfit_results, _params, fit_opt_2d)
 
-    npoints_in_a_ring_total_including_blanks_t, npoints_in_ring_t, _ij_aring_nogrid_available, _wt_2d = define_tilted_ring(_input_vf_nogrid, _xpos, _ypos, 0, 1, 0, 5*_params['r_galaxy_plane_e'], 0, _params)
+    npoints_in_a_ring_total_including_blanks_t, npoints_in_ring_t, _ij_aring_nogrid_available, _wt_2d = define_tilted_ring(_input_vf_nogrid, _xpos, _ypos, 0, 1, 0, 5*_params['r_galaxy_plane_e'], 999, _params)
 
     r_galaxy_plane, _nxy = solve_r_galaxy_plane_newton_sc(fit_opt_2d, _params, _ij_aring_nogrid_available, _xpos, _ypos, _pa, _incl, 0, \
                                                           n_coeffs_pa_bs, tck_pa_bs, n_coeffs_incl_bs, tck_incl_bs)
@@ -2087,10 +2100,15 @@ def make_vlos_model_vf_given_dyn_params(_input_vf_nogrid, _input_vf_tofit_2d, _w
     else:
         _vrot_bs = _vrot
 
+    _vrot_bs = np.where(r_galaxy_plane < 1, 0, _vrot_bs)
+
+
     if n_coeffs_vrad_bs != 0: # not constant
         _vrad_bs = BSpline(*tck_vrad_bs, extrapolate=True)(r_galaxy_plane)
     else:
         _vrad_bs = _vrad
+
+    _vrad_bs = np.where(r_galaxy_plane < 1, 0, _vrad_bs)
 
     cosp1 = np.cos(deg_to_rad*_pa_bs)
     sinp1 = np.sin(deg_to_rad*_pa_bs)
@@ -2212,16 +2230,16 @@ def make_vlos_model_vf_given_dyn_params_trfit_final_vrot(_input_vf_nogrid, _inpu
     nrings_reliable = _params['nrings_reliable']
     ring_s = 0
     ring_w = _params['ring_w']
-    flt_epsilon = 0.00001
+    flt_epsilon = 0.0000000001
     _trfit_final_model_vf = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
     _trfit_final_model_vf_full = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
     _input_m_trfit_vf = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
 
-    _pa_f = np.full(nrings_reliable*10, fill_value=np.nan, dtype=np.float64)
-    _incl_f = np.full(nrings_reliable*10, fill_value=np.nan, dtype=np.float64)
-    _vsys_f = np.full(nrings_reliable*10, fill_value=np.nan, dtype=np.float64)
-    _vrot_f = np.full(nrings_reliable*10, fill_value=np.nan, dtype=np.float64)
-    _vrad_f = np.full(nrings_reliable*10, fill_value=np.nan, dtype=np.float64)
+    _pa_f = np.zeros(nrings_reliable*10, dtype=np.float64)
+    _incl_f = np.zeros(nrings_reliable*10, dtype=np.float64)
+    _vsys_f = np.zeros(nrings_reliable*10, dtype=np.float64)
+    _vrot_f = np.zeros(nrings_reliable*10, dtype=np.float64)
+    _vrad_f = np.zeros(nrings_reliable*10, dtype=np.float64)
 
     _pa_f[:nrings_reliable] = _pa_f_b[:nrings_reliable]
     _incl_f[:nrings_reliable] = _incl_f_b[:nrings_reliable]
@@ -2294,9 +2312,23 @@ def make_vlos_model_vf_given_dyn_params_trfit_final_vrot(_input_vf_nogrid, _inpu
                         cost = 1.0
                         sint = 0.0
 
+                    cosp1 = np.cos(deg_to_rad*_pa_f[n]) # cosine
+                    sinp1 = np.sin(deg_to_rad*_pa_f[n]) # sine
+                    cosi1 = np.cos(deg_to_rad*_incl_f[n]) #cosine
+                    sini1 = np.sin(deg_to_rad*_incl_f[n]) # sine
+
+                    x_galaxy_plane = (-x_pixel_from_xpos * sinp1 + y_pixel_from_ypos * cosp1) # x in plane of galaxy
+                    y_galaxy_plane = (-x_pixel_from_xpos * cosp1 - y_pixel_from_ypos * sinp1) / cosi1 # y in plane of galaxy
+                    r_galaxy_plane = (x_galaxy_plane**2 + y_galaxy_plane**2)**0.5
+
+                    if r_galaxy_plane < ring_w and r_galaxy_plane >= 1: # linear interpolation of vrot
+                        vrot01 = (_vrot_f[1] / ring_w) * r_galaxy_plane
+                    if r_galaxy_plane < 1:
+                        vrot01 = 0
+
                     _trfit_final_model_vf_full[j, i] = vsys01 + (vrot01 * cost + vrad01 * sint) * np.sin(incl01*deg_to_rad)
 
-                    if not math.isinf(_input_vf_nogrid[j, i]) and not math.isnan(_input_vf_nogrid[j, i]):  # no blank
+                    if not np.isinf(_input_vf_nogrid[j, i]) and not np.isnan(_input_vf_nogrid[j, i]):  # no blank
                         _trfit_final_model_vf[j, i] = vsys01 + (vrot01 * cost + vrad01 * sint) * np.sin(incl01*deg_to_rad) 
                     else:
                         _trfit_final_model_vf[j, i] = np.nan
@@ -2306,10 +2338,8 @@ def make_vlos_model_vf_given_dyn_params_trfit_final_vrot(_input_vf_nogrid, _inpu
     
     write_fits_images(_params, _input_vf_nogrid, _2dbat_run_i, 'input_vf_grid_x1y1.fits')
     write_fits_images(_params, _input_vf_tofit_2d, _2dbat_run_i, 'input_vf_grid_x%dy%d.fits' % (_params['x_grid_2d'], _params['y_grid_2d']))
-
     write_fits_images(_params, _trfit_final_model_vf, _2dbat_run_i, 'trfit_vf.fits')
     write_fits_images(_params, _trfit_final_model_vf_full, _2dbat_run_i, 'trfit_vf_full.fits')
-
     write_fits_images(_params, _input_m_trfit_vf, _2dbat_run_i, 'input_m_trfit_vf.fits')
 
 

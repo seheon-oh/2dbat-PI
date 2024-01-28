@@ -50,8 +50,6 @@ import os
 
 
 
-
-
 def ellipsefit_2dpoints(_input_vf_tofit, _wi_2d, _params, xpos, ypos, pa, incl, ri, ro, side):
 
     npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_tofit, _wt_2d = define_tilted_ring(_input_vf_tofit, xpos, ypos, pa, incl, ri, ro, side, _params)
@@ -66,8 +64,275 @@ def ellipsefit_2dpoints(_input_vf_tofit, _wi_2d, _params, xpos, ypos, pa, incl, 
     ell.estimate(a_points)
     _xc, _yc, _a, _b, _theta = ell.params
     _i = np.arccos((_b/_a)) * 180. / np.pi # in degree
+    _theta = (_theta * 180. / np.pi) # w.r.t. W-E node in degree
+
+    _centre = np.array((_xc, _yc))
+    _centre = [(_xc, _yc)]
+    dists = distance.cdist(_centre, a_points, 'euclidean')
+    r_max = np.max(dists)
+
+    npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_central, _wt_2d = define_tilted_ring(_input_vf_tofit, _xc, _yc, _theta, _i, 0, 0.2*r_max, side, _params)
+    _it = _ij_aring_central[:, 0]
+    _jt = _ij_aring_central[:, 1]
+    vlos = _input_vf_tofit[_jt.astype(int), _it.astype(int)]
+    vsys_init = np.nanmedian(vlos)
+
+
+    def is_in_ellipse_and_left_half(x, y, xc, yc, a, b, theta):
+        cos_angle = np.cos(np.radians(360-theta))
+        sin_angle = np.sin(np.radians(360-theta))
+
+        x_rot = cos_angle * (x - xc) - sin_angle * (y - yc)
+        y_rot = sin_angle * (x - xc) + cos_angle * (y - yc)
+
+        inside_ellipse = (x_rot**2 / a**2 + y_rot**2 / b**2) <= 1
+        in_left_half = x_rot < 0 # left side
+
+        return inside_ellipse and in_left_half
+
+
+
+
+    def is_in_ellipse_and_right_half(x, y, xc, yc, a, b, theta):
+        cos_angle = np.cos(np.radians(360-theta))
+        sin_angle = np.sin(np.radians(360-theta))
+
+        x_rot = cos_angle * (x - xc) - sin_angle * (y - yc)
+        y_rot = sin_angle * (x - xc) + cos_angle * (y - yc)
+
+        inside_ellipse = (x_rot**2 / a**2 + y_rot**2 / b**2) <= 1
+        in_right_half = x_rot >= 0 # right side
+
+        return inside_ellipse and in_right_half
+
+
+
+    inside_left_half_ellipse_points = []
+    cols, rows = _input_vf_tofit.shape
+    for i in range(rows):
+        for j in range(cols):
+            if is_in_ellipse_and_left_half(i, j, _xc, _yc, _a, _b, _theta):
+                inside_left_half_ellipse_points.append((i, j))
+
+    x_left, y_left = zip(*inside_left_half_ellipse_points) # x, y 좌표 분리
+    x_l = np.array(x_left)
+    y_l = np.array(y_left)
+    median_vlos_side_l = np.nanmedian(_input_vf_tofit[y_l.astype(int), x_l.astype(int)])
+
+
+    inside_right_half_ellipse_points = []
+    cols, rows = _input_vf_tofit.shape
+    for i in range(rows):
+        for j in range(cols):
+            if is_in_ellipse_and_right_half(i, j, _xc, _yc, _a, _b, _theta):
+                inside_right_half_ellipse_points.append((i, j))
+
+    x_right, y_right = zip(*inside_right_half_ellipse_points) # x, y 좌표 분리
+    x_r = np.array(x_right)
+    y_r = np.array(y_right)
+    median_vlos_side_r = np.nanmedian(_input_vf_tofit[y_r.astype(int), x_r.astype(int)])
+
+
+    _theta += 90 # w.r.t. N-S node
+    if(median_vlos_side_l < median_vlos_side_r):
+        _theta += 180
+
+    if _theta > 360: _theta -= 360
+
+    print('-'*50)
+    print("+ Ellipse Fit results")
+    print('-'*50)
+
+    print(" XY = ",  (round(_xc, 2), round(_yc, 2)))
+    print(" PA = ", round(_theta, 2))
+    print(" R_major, R_minor = ", (round(_a, 2), round(_b, 2)))
+    print(" VSYS = ", round(vsys_init, 2))
+    print(" INCL = ", round(np.arccos(_b/_a) * 180. / np.pi, 2))
+    print('-'*50)
+    print("")
+    print("+ median-vlos_left_side: ", round(median_vlos_side_l, 2))
+    print("+ median-vlos_right side: ", round(median_vlos_side_r, 2))
+    print('-'*50)
+    print('-'*50)
+
+
+    return _xc, _yc, vsys_init, _theta, _i, r_max
+
+
+
+
+
+
+
+
+
+
+
+def ellipsefit_2dpoints_test(_input_vf_tofit, _wi_2d, _params, xpos, ypos, pa, incl, ri, ro, side):
+
+    npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_tofit, _wt_2d = define_tilted_ring(_input_vf_tofit, xpos, ypos, pa, incl, ri, ro, side, _params)
+
+    a_points_t = np.array((_ij_aring_tofit[:, 0], _ij_aring_tofit[:, 1]))
+    a_points = np.transpose(a_points_t)
+
+    x = a_points[:, 0]
+    y = a_points[:, 1]
+
+    ell = EllipseModel()
+    ell.estimate(a_points)
+    _xc, _yc, _a, _b, _theta = ell.params
+    _i = np.arccos((_b/_a)) * 180. / np.pi # in degree
+    _theta = (_theta * 180. / np.pi) # w.r.t. W-E node in degree
+
+    _centre = np.array((_xc, _yc))
+    _centre = [(_xc, _yc)]
+    dists = distance.cdist(_centre, a_points, 'euclidean')
+    r_max = np.max(dists)
+
+    npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_central, _wt_2d = define_tilted_ring(_input_vf_tofit, _xc, _yc, _theta, _i, 0, 0.2*r_max, side, _params)
+    _it = _ij_aring_central[:, 0]
+    _jt = _ij_aring_central[:, 1]
+    vlos = _input_vf_tofit[_jt.astype(int), _it.astype(int)]
+    vsys_init = np.nanmedian(vlos)
+
+
+    def is_in_ellipse_and_right_half(x, y, xc, yc, a, b, theta):
+        cos_angle = np.cos(np.radians(theta))
+        sin_angle = np.sin(np.radians(theta))
+
+        x_rot = cos_angle * (x - xc) - sin_angle * (y - yc)
+        y_rot = sin_angle * (x - xc) + cos_angle * (y - yc)
+
+        inside_ellipse = (x_rot**2 / a**2 + y_rot**2 / b**2) <= 1
+        in_right_half = x_rot >= 0  and y_rot >= 0 # right side
+
+        return inside_ellipse and in_right_half
+
+    def is_in_ellipse_and_left_half(x, y, xc, yc, a, b, theta):
+        cos_angle = np.cos(np.radians(theta))
+        sin_angle = np.sin(np.radians(theta))
+
+        x_rot = cos_angle * (x - xc) - sin_angle * (y - yc)
+        y_rot = sin_angle * (x - xc) + cos_angle * (y - yc)
+
+        inside_ellipse = (x_rot**2 / a**2 + y_rot**2 / b**2) <= 1
+        in_left_half = x_rot < 0  # left side
+
+        return inside_ellipse and in_left_half
+    
+
+    def rotate_point_back(x_rot, y_rot, xc, yc, theta):
+        x_trans = x_rot - xc
+        y_trans = y_rot - yc
+
+        cos_angle = np.cos(np.radians(-theta + 0)) # w.r.t., N-S node
+        sin_angle = np.sin(np.radians(-theta + 0))
+
+        x = cos_angle * x_trans + sin_angle * y_trans + xc
+        y = -sin_angle * x_trans + cos_angle * y_trans + yc
+
+
+        return x, y
+
+
+
+
+    inside_left_half_ellipse_points = []
+    rows, cols = _input_vf_tofit.shape
+    for i in range(rows):
+        for j in range(cols):
+            if is_in_ellipse_and_left_half(i, j, _xc, _yc, _a, _b, _theta):
+                inside_left_half_ellipse_points.append((i, j))
+
+    inside_left_half_ellipse_points_rotated_back = []
+    for point in inside_left_half_ellipse_points:
+        i_rot, j_rot = point
+        i_original, j_original = rotate_point_back(i_rot, j_rot, _xc, _yc, _theta)
+        inside_left_half_ellipse_points_rotated_back.append((i_original, j_original))
+
+    x_left, y_left = zip(*inside_left_half_ellipse_points_rotated_back) # x, y 좌표 분리
+    x_l = np.array(x_left)
+    y_l = np.array(y_left)
+    median_vlos_side_l = np.nanmedian(_input_vf_tofit[y_l.astype(int), x_l.astype(int)])
+
+    inside_right_half_ellipse_points = []
+    rows, cols = _input_vf_tofit.shape
+    for i in range(rows):
+        for j in range(cols):
+            if is_in_ellipse_and_right_half(i, j, _xc, _yc, _a, _b, _theta):
+                inside_right_half_ellipse_points.append((i, j))
+
+    inside_right_half_ellipse_points_rotated_back = []
+    for point in inside_right_half_ellipse_points:
+        i_rot, j_rot = point
+        i_original, j_original = rotate_point_back(i_rot, j_rot, _xc, _yc, _theta)
+        inside_right_half_ellipse_points_rotated_back.append((i_original, j_original))
+
+    x_right, y_right = zip(*inside_right_half_ellipse_points_rotated_back) # x, y 좌표 분리
+    x_r = np.array(x_right)
+    y_r = np.array(y_right)
+    median_vlos_side_r = np.nanmedian(_input_vf_tofit[y_r.astype(int), x_r.astype(int)])
+
+    print("center = ",  (_xc, _yc))
+    print("angle of rotation = ",  _theta)
+    print("axes = ", (_a, _b))
+    print("vsys = ", vsys_init)
+    print("i = ", np.arccos((_b/_a)) * 180. / np.pi  )
+
+
+    print(median_vlos_side_l)
+    print(median_vlos_side_r)
+
+
+
+    _theta += 90 # w.r.t. N-S node
+    if(median_vlos_side_l < median_vlos_side_r):
+        _theta += 180
+
+    print(_theta)
+
+
+
+
+
+    
+
+
+    plt.figure(figsize=(6, 6))
+    plt.scatter(x, y, s=30, edgecolors='b', facecolors='none') # s는 점의 크기
+    plt.scatter(x_r, y_r, s=20, edgecolors='g', facecolors='red') # s는 점의 크기
+    plt.scatter(x_l, y_l, s=20, edgecolors='r', facecolors='blue') # s는 점의 크기
+    plt.xlim(0, 100) # x축 범위 설정
+    plt.ylim(0, 100) # y축 범위 설정
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Half Ellipse Points')
+    plt.grid(True)
+    plt.show()
+    sys.exit()
+
+
+    return _xc, _yc, vsys_init, _theta, _i, r_max, half_ellipse_points
+
+
+
+
+
+def ellipsefit_2dpoints_org(_input_vf_tofit, _wi_2d, _params, xpos, ypos, pa, incl, ri, ro, side):
+
+    npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_tofit, _wt_2d = define_tilted_ring(_input_vf_tofit, xpos, ypos, pa, incl, ri, ro, side, _params)
+
+    a_points_t = np.array((_ij_aring_tofit[:, 0], _ij_aring_tofit[:, 1]))
+    a_points = np.transpose(a_points_t)
+
+    x = a_points[:, 0]
+    y = a_points[:, 1]
+
+    ell = EllipseModel()
+    ell.estimate(a_points)
+    _xc, _yc, _a, _b, _theta = ell.params
+    _i = np.arccos((_b/_a)) * 180. / np.pi # in degree
     _theta = (_theta * 180. / np.pi) + 90 # in degree
-    _theta = 10
 
     _centre = [(_xc, _yc)]
     dists = distance.cdist(_centre, a_points, 'euclidean')
@@ -77,7 +342,7 @@ def ellipsefit_2dpoints(_input_vf_tofit, _wi_2d, _params, xpos, ypos, pa, incl, 
     _it = _ij_aring_central[:, 0]
     _jt = _ij_aring_central[:, 1]
     vlos = _input_vf_tofit[_jt.astype(int), _it.astype(int)]
-    vsys_init = np.median(vlos)
+    vsys_init = np.nanmedian(vlos)
 
     return _xc, _yc, vsys_init, _theta, _i, r_max
 
@@ -100,7 +365,6 @@ def set_vrot_bs_coefficients_bounds(_vrot_init_t, del_vrot, _params, _ring_t):
     _vrot_bound_u = np.zeros(vrot_fine.shape[0], dtype=np.float64)
 
     for _i in range(len(vrot_fine)):
-
         _vrot_bound_l[_i] = vrot_fine[_i] - del_vrot
         _vrot_bound_u[_i] = vrot_fine[_i] + del_vrot
 
@@ -132,7 +396,6 @@ def set_incl_bs_coefficients_bounds(_incl_init_t, del_incl, _params, _ring_t):
     _incl_bound_u = np.zeros(incl_fine.shape[0], dtype=np.float64)
 
     for _i in range(len(incl_fine)):
-
         _incl_bound_l[_i] = incl_fine[_i] - del_incl
         _incl_bound_u[_i] = incl_fine[_i] + del_incl
 
@@ -155,8 +418,6 @@ def set_pa_bs_coefficients_bounds(_pa_init_t, del_pa, _params, _ring_t):
 
     r_fine = np.linspace(xs_bs, xe_bs, _params['nrings_intp'], endpoint=True)
 
-    print(r_fine)
-    print(nrings_reliable, xe_bs)
     pa_fine = scipy_interp1d(r_fine)
 
     _pa_bound_l = np.zeros(pa_fine.shape[0], dtype=np.float64)
@@ -190,14 +451,12 @@ def set_pa_bs_coefficients_bounds_constrained_to_incl_vrot(_pa_bs_intp, _vrot_in
     _pa_bound_u = np.zeros(_ring_t.shape[0], dtype=np.float64)
 
     for _i in range(len(_ring_t)):
-
         _ri = _ring_t[_i] 
         _ro = _ring_t[_i] + _params['ring_w'] 
 
         npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring_pa_bound, _wt_2d = define_tilted_ring(_input_vf_tofit, _xpos_init, _ypos_init, _pa_bs_intp[_i], _incl_intp[_i], _ri, _ro, side, _params)
         _pa_bound_l[_i], _pa_bound_u[_i] = set_phi_bounds(_pa_bs_intp[_i], _vrot_intp[_i], del_vrot, _incl_intp[_i], del_i, _params, _ij_aring_pa_bound)
 
-        print("ring:", _ring_t[_i], _vrot_intp[_i], "n:", _ij_aring_pa_bound.shape[0], "incl:", _incl_intp[_i], _pa_bound_l[_i], _pa_bs_intp[_i], _pa_bound_u[_i])
 
     n_knots_inner = _params['n_pa_bs_knots_inner'] # 0, 1, 2, ...
     k_bs = _params['k_pa_bs'] # 0, 1, 2, ...
@@ -221,7 +480,6 @@ def set_vrot_bs_coefficients_bounds_constrained_to_pa_incl(_pa_bs_intp, _vrot_in
     _vrot_bound_u = np.zeros(_ring_t.shape[0], dtype=np.float64)
 
     for _i in range(len(_ring_t)):
-
         _ri = _ring_t[_i] 
         _ro = _ring_t[_i] + _params['ring_w'] 
 
@@ -454,11 +712,11 @@ def trfit_ring_by_ring(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, 
 
     nrings_reliable = int(np.max(_nrings_reliable_t)) + 1
 
+    _r_max_tr = _params['ring_w']*nrings_reliable
+    _params['r_galaxy_plane_e'] = _r_max_tr
+
 
     if _intp_index == 'True':
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
         _ring_t[0] = 0
         _sigma_t[0] = _sigma_t[1]
@@ -479,9 +737,6 @@ def trfit_ring_by_ring(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, 
         _vrot_et[0] = _vrot_et[1]
         _vrad_et[0] = _vrad_et[1]
 
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
         _ring_t[nrings_reliable] = _ring_t[nrings_reliable-1] + ring_w # --> this will be replaced to _r_galaxy_plane_e after in _2dbat.py 
         _sigma_t[nrings_reliable] = _sigma_t[nrings_reliable-1]
@@ -503,9 +758,6 @@ def trfit_ring_by_ring(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, 
         _vrad_et[nrings_reliable] = _vrad_et[nrings_reliable-1]
 
         nrings_reliable += 1 # add extra outer ring
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
     return _ring_t[:nrings_reliable], \
         _sigma_t[:nrings_reliable], \
@@ -528,6 +780,168 @@ def trfit_ring_by_ring(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, 
 
 
 
+
+
+def trfit_ring_by_ring_final_org(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, fit_opt_2d, ndim, tr_params_priors_init, _tr2dfit_results, side, _intp_index):
+
+
+    n_cpus = int(_params['num_cpus_tr_ray'])
+
+    nrings = 2*_params['nrings_reliable']
+    ring_w = _params['ring_w']
+
+    _sigma = _params['_sigma_init']
+    _xpos = _params['_xpos_init']
+    _ypos = _params['_ypos_init']
+    _vsys = _params['_vsys_init']
+    _pa = _params['_pa_init']
+    _incl = _params['_incl_init']
+    _vrot = _params['_vrot_init']
+    _vrad = _params['_vrad_init']
+
+    _ring_t = np.zeros(nrings+2, dtype=np.float64)
+
+    _sigma_t = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_t = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_t = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_t = np.zeros(nrings+2, dtype=np.float64)
+    _pa_t = np.zeros(nrings+2, dtype=np.float64)
+    _incl_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_t = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_t = np.zeros(nrings+2, dtype=np.float64)
+
+    _sigma_et = np.zeros(nrings+2, dtype=np.float64)
+    _xpos_et = np.zeros(nrings+2, dtype=np.float64)
+    _ypos_et = np.zeros(nrings+2, dtype=np.float64)
+    _vsys_et = np.zeros(nrings+2, dtype=np.float64)
+    _pa_et = np.zeros(nrings+2, dtype=np.float64)
+    _incl_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrot_et = np.zeros(nrings+2, dtype=np.float64)
+    _vrad_et = np.zeros(nrings+2, dtype=np.float64)
+
+    _nrings_reliable_t = np.zeros(nrings+2, dtype=np.float64)
+    _npoints_in_a_ring_total = np.zeros(nrings+2, dtype=np.float64)
+    _npoints_in_a_ring = np.zeros(nrings+2, dtype=np.float64)
+
+    _input_vf_id = ray.put(_input_vf)
+    _tr_model_vf_id = ray.put(_tr_model_vf)
+    _wi_2d_id = ray.put(_wi_2d)
+    _params_id = ray.put(_params)
+    _tr2dfit_results_id = ray.put(_tr2dfit_results)
+    _i = 0
+    _i_id = ray.put(_i)
+
+    side_id = ray.put(side)
+
+    fit_opt_id = ray.put(fit_opt)
+    fit_opt_2d_id = ray.put(fit_opt_2d)
+    ndim_id = ray.put(ndim)
+    tr_params_priors_init_id = ray.put(tr_params_priors_init)
+
+
+
+    results_ids = [trfit_ring_i_final.remote(_input_vf_id, _tr_model_vf_id, _wi_2d_id, _params_id, fit_opt_id, fit_opt_2d_id, ndim_id, tr_params_priors_init_id, _tr2dfit_results_id, side_id, _i_id) for _i_id in range(0, nrings)]
+
+    while len(results_ids):
+        done_ids, results_ids = ray.wait(results_ids)
+        if done_ids:
+
+            ring =  ray.get(done_ids[0])[0]
+
+            _sigma_ti =  ray.get(done_ids[0])[1]
+            _xpos_ti =  ray.get(done_ids[0])[2]
+            _ypos_ti =  ray.get(done_ids[0])[3]
+            _vsys_ti =  ray.get(done_ids[0])[4]
+            _pa_ti =  ray.get(done_ids[0])[5]
+            _incl_ti =  ray.get(done_ids[0])[6]
+            _vrot_ti =  ray.get(done_ids[0])[7]
+            _vrad_ti =  ray.get(done_ids[0])[8]
+
+            _sigma_eti =  ray.get(done_ids[0])[9]
+            _xpos_eti =  ray.get(done_ids[0])[10]
+            _ypos_eti =  ray.get(done_ids[0])[11]
+            _vsys_eti =  ray.get(done_ids[0])[12]
+            _pa_eti =  ray.get(done_ids[0])[13]
+            _incl_eti =  ray.get(done_ids[0])[14]
+            _vrot_eti =  ray.get(done_ids[0])[15]
+            _vrad_eti =  ray.get(done_ids[0])[16]
+
+            _i_ti =  ray.get(done_ids[0])[17]
+            _i_t_reliable =  ray.get(done_ids[0])[18]
+
+            npoints_in_a_ring_total_including_blanks =  ray.get(done_ids[0])[19]
+            npoints_in_a_ring =  ray.get(done_ids[0])[20]
+
+            _ring_t[_i_ti+1] = ring
+            _sigma_t[_i_ti+1] = _sigma_ti
+            _sigma_et[_i_ti+1] = _sigma_eti
+            _xpos_t[_i_ti+1] = _xpos_ti
+            _xpos_et[_i_ti+1] = _xpos_eti
+            _ypos_t[_i_ti+1] = _ypos_ti
+            _ypos_et[_i_ti+1] = _ypos_eti
+            _vsys_t[_i_ti+1] = _vsys_ti
+            _vsys_et[_i_ti+1] = _vsys_eti
+            _pa_t[_i_ti+1] = _pa_ti
+            _pa_et[_i_ti+1] = _pa_eti
+            _incl_t[_i_ti+1] = _incl_ti
+            _incl_et[_i_ti+1] = _incl_eti
+            _vrot_t[_i_ti+1] = _vrot_ti
+            _vrot_et[_i_ti+1] = _vrot_eti
+            _vrad_t[_i_ti+1] = _vrad_ti
+            _vrad_et[_i_ti+1] = _vrad_eti
+            _nrings_reliable_t[_i_ti] = _i_t_reliable
+
+            _npoints_in_a_ring_total[_i_ti+1] = npoints_in_a_ring_total_including_blanks
+            _npoints_in_a_ring[_i_ti+1] = npoints_in_a_ring
+
+    nrings_reliable = int(np.max(_nrings_reliable_t)) + 1
+
+
+    if _intp_index == 'True':
+
+        _ring_t[0] = 0
+        _sigma_t[0] = _sigma_t[1]
+        _xpos_t[0] = _xpos_t[1]
+        _ypos_t[0] = _ypos_t[1]
+        _vsys_t[0] = _vsys_t[1]
+        _pa_t[0] = _pa_t[1]
+        _incl_t[0] = _incl_t[1]
+        _vrot_t[0] = 0
+        _vrad_t[0] = _vrad_t[1]
+
+
+        _ring_t[nrings_reliable] = _ring_t[nrings_reliable-1] + ring_w # --> this will be replaced to _r_galaxy_plane_e after in _2dbat.py 
+        _sigma_t[nrings_reliable] = _sigma_t[nrings_reliable-1]
+        _xpos_t[nrings_reliable] = _xpos_t[nrings_reliable-1]
+        _ypos_t[nrings_reliable] = _ypos_t[nrings_reliable-1]
+        _vsys_t[nrings_reliable] = _vsys_t[nrings_reliable-1]
+        _pa_t[nrings_reliable] = _pa_t[nrings_reliable-1]
+        _incl_t[nrings_reliable] = _incl_t[nrings_reliable-1]
+        _vrot_t[nrings_reliable] = _vrot_t[nrings_reliable-1]
+        _vrad_t[nrings_reliable] = _vrad_t[nrings_reliable-1]
+
+        nrings_reliable += 1 # add extra outer ring
+
+    return _ring_t[:nrings_reliable], \
+        _sigma_t[:nrings_reliable], \
+        _xpos_t[:nrings_reliable], \
+        _ypos_t[:nrings_reliable], \
+        _vsys_t[:nrings_reliable], \
+        _pa_t[:nrings_reliable], \
+        _incl_t[:nrings_reliable], \
+        _vrot_t[:nrings_reliable], \
+        _vrad_t[:nrings_reliable], \
+        _sigma_et[:nrings_reliable], \
+        _xpos_et[:nrings_reliable], \
+        _ypos_et[:nrings_reliable], \
+        _vsys_et[:nrings_reliable], \
+        _pa_et[:nrings_reliable], \
+        _incl_et[:nrings_reliable], \
+        _vrot_et[:nrings_reliable], \
+        _vrad_et[:nrings_reliable], \
+        _npoints_in_a_ring_total[:nrings_reliable], \
+        _npoints_in_a_ring[:nrings_reliable], \
+        nrings_reliable
 
 
 def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, fit_opt_2d, ndim, tr_params_priors_init, _tr2dfit_results, side, _intp_index):
@@ -646,9 +1060,6 @@ def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, 
 
 
     if _intp_index == 'True':
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
         _ring_t[0] = 0
         _sigma_t[0] = _sigma_t[1]
@@ -660,9 +1071,6 @@ def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, 
         _vrot_t[0] = 0
         _vrad_t[0] = _vrad_t[1]
 
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
         _ring_t[nrings_reliable] = _ring_t[nrings_reliable-1] + ring_w # --> this will be replaced to _r_galaxy_plane_e after in _2dbat.py 
         _sigma_t[nrings_reliable] = _sigma_t[nrings_reliable-1]
@@ -675,11 +1083,10 @@ def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, 
         _vrad_t[nrings_reliable] = _vrad_t[nrings_reliable-1]
 
         nrings_reliable += 1 # add extra outer ring
-        print("here", nrings_reliable)
-        print(_ring_t[:nrings_reliable])
-        print(_pa_t[:nrings_reliable])
 
-    return _ring_t[:nrings_reliable], \
+
+
+    return (_ring_t[:nrings_reliable], \
         _sigma_t[:nrings_reliable], \
         _xpos_t[:nrings_reliable], \
         _ypos_t[:nrings_reliable], \
@@ -698,7 +1105,8 @@ def trfit_ring_by_ring_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, 
         _vrad_et[:nrings_reliable], \
         _npoints_in_a_ring_total[:nrings_reliable], \
         _npoints_in_a_ring[:nrings_reliable], \
-        nrings_reliable 
+        nrings_reliable)
+
 
 
 
@@ -731,7 +1139,6 @@ def trfit_ring_i_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, fit_op
 
     npoints_in_a_ring_total_including_blanks, npoints_in_ring, _ij_aring, _wt_2d = define_tilted_ring(_input_vf, _xpos, _ypos, _pa, _incl, ri, ro, side, _params)
     n_ij_aring = _ij_aring.shape[0]
-    print(n_ij_aring, _sigma, _xpos, _ypos, _vsys, _pa, _incl, _vrot, _vrad)
 
     _a = ring # along major axis
     _b = _a * np.cos(_incl*deg_to_rad) # along minor axis
@@ -739,7 +1146,7 @@ def trfit_ring_i_final(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, fit_op
     _ring_area = _l * ring_w
     _f_npoints = n_ij_aring / _ring_area
 
-    if n_ij_aring > 10 or (n_ij_aring < 10 and _i < nrings_outto_rmax): # dynesty run
+    if n_ij_aring > 10 or (n_ij_aring > 2 and _i < nrings_outto_rmax): # dynesty run
 
         print("ring----- ", _i, ":", n_ij_aring)
         _trfit_results, _n_dim = run_nested_sampler_trfit(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _params, fit_opt, ndim, tr_params_priors_init)
@@ -877,7 +1284,7 @@ def trfit_ring_i(_input_vf, _tr_model_vf, _wi_2d, _params, fit_opt, ndim, tr_par
     _ring_area = _l * ring_w
     _f_npoints = n_ij_aring / _ring_area
 
-    if n_ij_aring > 10 or (n_ij_aring < 10 and _i < nrings_outto_rmax): # dynesty run
+    if n_ij_aring > 10 or (n_ij_aring > 2 and _i < nrings_outto_rmax): # dynesty run
         print("ring----- ", _i, ":", n_ij_aring)
         _trfit_results, _n_dim = run_nested_sampler_trfit(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _params, fit_opt, ndim, tr_params_priors_init)
 
@@ -1103,7 +1510,7 @@ def set_params_fit_option(_params, sigma, sigma_fitoption, sigma_init, \
         incl0 = _params['_i_el'] - _params['incl_bounds_width'] 
         incl1 = _params['_i_el'] + _params['incl_bounds_width'] 
         if incl0 <= 0: incl0 = 1
-        if incl1 >= 90: incl2 = 89
+        if incl1 >= 90: incl1 = 89
 
         sigma0 = 0
         sigma1 = 100
@@ -1132,7 +1539,7 @@ def set_params_fit_option(_params, sigma, sigma_fitoption, sigma_init, \
         incl0 = _params['_incl_init'] - _params['incl_bounds_width'] 
         incl1 = _params['_incl_init'] + _params['incl_bounds_width'] 
         if incl0 <= 0: incl0 = 1
-        if incl1 >= 90: incl2 = 89
+        if incl1 >= 90: incl1 = 89
 
         sigma0 = _params['_sigma_init'] - _params['sigma_bounds_width'] 
         sigma1 = _params['_sigma_init'] + _params['sigma_bounds_width'] 
@@ -1165,7 +1572,7 @@ def trfit_2d(_input_vf, _tr_model_vf, _wi_2d, _params, tr_params_bounds, nrings_
     _vrad = _params['_vrad_init']
     ri = 0
     ro =  5*_params['r_galaxy_plane_e']
-    side = 0
+    side = 999
 
     npoints_total = 0 
     npoints_in_current_ring = 0
@@ -1174,11 +1581,13 @@ def trfit_2d(_input_vf, _tr_model_vf, _wi_2d, _params, tr_params_bounds, nrings_
 
     n_ij_aring = _ij_aring.shape[0]
     r_galaxy_plane = np.zeros(n_ij_aring, dtype=np.float64)
+    print('-'*50)
+    print("+ N-points to fit:", n_ij_aring)
+    print('-'*50)
 
     _trfit_results, _n_dim, fit_opt_2d, std_resample_run = run_nested_sampler_trfit_2d(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _params, tr_params_bounds, nrings_reliable, r_galaxy_plane, tck_vrot_bs_init_from_trfit, tck_pa_bs_init_from_trfit, tck_incl_bs_init_from_trfit, _2dbat_run_i)
 
     print("")
-    print("npoints:", n_ij_aring)
     for p in range(0, _n_dim):
         print("p-", p, "=", _trfit_results[p], "+/-", _trfit_results[p+_n_dim])
 

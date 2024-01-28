@@ -1,13 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#|-----------------------------------------|
-#| _2dbat_params.py
-#|-----------------------------------------|
-#| by Se-Heon Oh
-#| Dept. of Physics and Astronomy
-#| Sejong University, Seoul, South Korea
-#|-----------------------------------------|
 
 import sys
 import numpy as np
@@ -37,13 +28,13 @@ def read_configfile(configfile):
 
 def default_params():
     _params = {
-    'main_2dbat':'/Users/seheon/research/projects/2dbat.pi/2dbat-PI/src',  # <---- UPDATE HERE
+    'main_2dbat':'/Users/seheon/research/projects/2dbat-PI-dev/2dbat-PI-dev/src',  # <---- UPDATE HERE
 
-    'wdir':'/Users/seheon/research/projects/2dbat.pi/2dbat-PI/src/analysis',  # <---- UPDATE HERE
+    'wdir':'/Users/seheon/research/projects/2dbat-PI-dev/2dbat-PI-dev/src/analysis/vcc1992',  # <---- UPDATE HERE
 
     '_2dbatdir':'output',
 
-    'input_vf':'test1.fits',  # <---- UPDATE HERE
+    'input_vf':'vcc1992_sgfit1_masked.fits',  # <---- UPDATE HERE
 
     '_vlos_lower':-10000,  # <---- UPDATE HERE in km/s
     '_vlos_upper':10000,  # <---- UPDATE HERE in km/s
@@ -64,12 +55,12 @@ def default_params():
     'nrings_reliable':10,
     'nrings_intp':50,
 
-    'free_angle':0,
+    'free_angle':10,
     'ri':0,
     'ro':1000,
-    'cosine_weight_power':0, # 0: uniforme,  1: |cosine(theta)| or 2: cos(theta)^2
+    'cosine_weight_power':1, # 0: uniform,  1: |cosine(theta)| or 2: cos(theta)^2
 
-    'sigma_bounds_width':100, # bound width for SIGMA in km/s
+    'sigma_bounds_width':50, # bound width for SIGMA in km/s
     'xpos_bounds_width':2, # bound width for XPOS in pixels
     'ypos_bounds_width':2, # bound width for YPOS in pixels
     'vsys_bounds_width':100, # bound width for VSYS in km/s
@@ -79,7 +70,7 @@ def default_params():
     'vrad_bounds_width':20, # bound width for VRAD in km/s
 
     'n_pa_bs_knots_inner':0,
-    'k_pa_bs':0, # 1:linear, 2:quadractic, 3:cubic
+    'k_pa_bs':3, # 1:linear, 2:quadractic, 3:cubic
 
     'n_coeffs_pa_bs':999,
     'pa_bs_min':0, # min PA value over the radii : used for PA normalisation (0 ~ 1)
@@ -87,18 +78,18 @@ def default_params():
     'pa_bs_bounds':20, # pa_bs bounds in deg
 
     'n_incl_bs_knots_inner':0,
-    'k_incl_bs':0, # 1:linear, 2:quadractic, 3:cubic
+    'k_incl_bs':3, # 1:linear, 2:quadractic, 3:cubic
 
     'n_coeffs_incl_bs':999,
     'incl_bs_min':0, # min PA value over the radii : used for INCL normalisation (0 ~ 1)
-    'incl_bs_max':30, # min PA value over the radii : used for INCL normalisation (0 ~ 1)
+    'incl_bs_max':90, # min PA value over the radii : used for INCL normalisation (0 ~ 1)
     'incl_bs_bounds':50, # incl_bs bounds in deg
 
     'n_vrot_bs_knots_inner':0,
     'k_vrot_bs':3, # 1:linear, 2:quadractic, 3:cubic
 
     'n_coeffs_vrot_bs':999,
-    'vrot_bs_bounds':50, # vrot_bs bounds in km/s
+    'vrot_bs_bounds':100, # vrot_bs bounds in km/s
 
     'n_vrad_bs_knots_inner':0,
     'k_vrad_bs':0, # 1:linear, 2:quadractic, 3:cubic
@@ -180,8 +171,8 @@ def default_params():
 
     'ncolm_per_core':'',
     'nsegments_nax2':'',
-    'num_cpus_tr_ray':1,  # <---- UPDATE HERE
-    'num_cpus_tr_dyn':8,  # <---- UPDATE HERE
+    'num_cpus_tr_ray':2,  # <---- UPDATE HERE
+    'num_cpus_tr_dyn':4,  # <---- UPDATE HERE
     'num_cpus_2d_dyn':8,  # <---- UPDATE HERE
     }
     
