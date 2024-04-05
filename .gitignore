@@ -1,0 +1,37 @@
+# 주석 - 이 줄은 무시됩니다.
+
+# 특정 파일 무시
+git.how
+
+# 로그 파일 무시
+*.log
+
+# 특정 디렉토리 전체 무시
+node_modules/
+
+# 특정 확장자를 가진 파일 무시
+*.temp
+*.bak
+
+# 특정 디렉토리 내의 특정 파일 무시
+logs/debug.log
+
+# 특정 패턴을 제외하고 무시
+!important.log
+
+# 빌드 디렉토리 무시
+/build/
+
+# 특정 확장자를 가진 파일 중 특정 파일만 무시
+*.swp
+!important.swp
+
+# 숨겨진 파일 무시
+.*
+!/.gitignore
+
+# 특정 디렉토리 내의 모든 .txt 파일 무시
+documentation/*.txt
+
+# 특정 경로의 파일 무시
+/config/database.yml
