@@ -26,18 +26,16 @@ _2dbatdir: output
 
 #+++++++++++++++++++++++++++++++++
 # input 2D velocity field t3 fit
-'input_int': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
-#'input_vf': sgfit.G3_1.1.fits  # <---- UPDATE HERE
+'input_int': sgfit.G3_1.0.fits  # <---- UPDATE HERE
+'input_vdisp': sgfit.G3_1.2.fits  # <---- UPDATE HERE
 
-'input_vf': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
-'input_vf_e': 999  # <---- UPDATE HERE
+'input_vf': sgfit.G3_1.1.fits  # <---- UPDATE HERE
+'input_vf_e': sgfit.G3_1.1.e.fits  # <---- UPDATE HERE
+# or
+#'input_vf_e': 999  # <---- UPDATE HERE
 
-#'input_vf_m_bsfit': 999  # <---- UPDATE HERE
 'input_vf_m_bsfit': input_m_bsfit_vf_grid_x1y1.fits  # <---- UPDATE HERE
 
-'input_vf_blobbed': sgfit.G3_1.1.blob.fits  # <---- UPDATE HERE
-'input_vdisp': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
-#'input_vf_e': model.vrot1.i45.p330.fits  # <---- UPDATE HERE
 
 #+++++++++++++++++++++++++++++++++
 # input 2D velocity field : VLOS lower/upper limits
@@ -69,7 +67,9 @@ r_galaxy_plane_s: 0 # : used for PA normalisation (0 ~ 1)
 r_galaxy_plane_e: 999  # : used for PA normalisation (0 ~ 1)
 r_galaxy_plane_e_geo: 999  # : used for PA normalisation (0 ~ 1)
 ratio_valid_to_total: 0.01
-ring_w: 2 
+
+ring_w: 2 # <---- UPDATE HERE in pixels
+
 nrings: 100
 nrings_reliable: 10
 nrings_intp: 30
@@ -91,7 +91,7 @@ vrad_bounds_width: 20  # bound width for VRAD in km/s
 
 # ----------------------------------
 # PA-BS
-n_pa_bs_knots_inner: 0
+n_pa_bs_knots_inner: 0 # <---- UPDATE HERE
 k_pa_bs: 0  # 1:linear, 2:quadratic, 3:cubic
 
 n_coeffs_pa_bs: 999
@@ -101,8 +101,8 @@ pa_bs_bounds: 50  # pa_bs bounds in deg
 
 # ----------------------------------
 # INCL-BS
-n_incl_bs_knots_inner: 1
-k_incl_bs: 1  # 1:linear, 2:quadractic, 3:cubic
+n_incl_bs_knots_inner: 0 # <---- UPDATE HERE in km/s
+k_incl_bs: 0  # 1:linear, 2:quadractic, 3:cubic
 
 n_coeffs_incl_bs: 999
 incl_bs_min: 0  # min PA value over the radii : used for INCL normalisation (0 ~ 1)
@@ -110,8 +110,8 @@ incl_bs_max: 90  # min PA value over the radii : used for INCL normalisation (0 
 incl_bs_bounds: 100  # incl_bs bounds in deg
 
 # ----------------------------------
-# VROT-BS : (2, 1)
-n_vrot_bs_knots_inner: 5
+# VROT-BS :
+n_vrot_bs_knots_inner: 5 # <---- UPDATE HERE in km/s
 k_vrot_bs: 1 # 1:linear, 2:quadractic, 3:cubic
 
 n_coeffs_vrot_bs: 999
@@ -157,8 +157,8 @@ _vrad_init: 0
 #+++++++++++++++++++++++++++++++++
 
 # grids
-x_grid_2d: 2  # <---- UPDATE HERE
-y_grid_2d: 2  # <---- UPDATE HERE
+x_grid_2d: 1  # <---- UPDATE HERE
+y_grid_2d: 1  # <---- UPDATE HERE
 x_grid_tr: 1  # <---- UPDATE HERE
 y_grid_tr: 1  # <---- UPDATE HERE
 
