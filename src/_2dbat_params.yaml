@@ -19,41 +19,34 @@
 # directories
 # 2dbat main
 main_2dbat: '/Users/seheon/research/projects/2dbat-PI-dev/2dbat-PI-dev/src'  # <---- UPDATE HERE
-
-# working directory where the input data cube is
-wdir: '/Users/seheon/research/projects/AVID/3dbarolo/data/vcc656'
+wdir: '/Users/seheon/research/projects/AVID/3dbarolo/data/model_vfs'
 
 # output directory
 _2dbatdir: output
 
 #+++++++++++++++++++++++++++++++++
-# input 2D velocity field to fit
-'input_int': sgfit.G3_1.0.fits  # <---- UPDATE HERE
-'input_vf': sgfit.G3_1.1.fits  # <---- UPDATE HERE
-#'input_vf_e': 999  # <---- UPDATE HERE
-'input_vf_e': sgfit.G3_1.1.e.fits  # <---- UPDATE HERE
-'input_vdisp': sgfit.G3_1.2.fits  # <---- UPDATE HERE
-#'input_vf': model_i43.fits  # <---- UPDATE HERE
-#'input_vf': new.model.xy101.vsys2198.p330.i65.fits  # <---- UPDATE HERE
-#'input_vf': model.i60.v50.fits  # <---- UPDATE HERE
-#'input_vf': test2.fits  # <---- UPDATE HERE
-#'input_vf': model.incl60.fits  # <---- UPDATE HERE
-'input_vf_m_bsfit': input_m_bsfit_vf_grid_x1y1.fits  # <---- UPDATE HERE
-'input_vf_blobbed': sgfit.G3_1.1.blob.fits  # <---- UPDATE HERE
+# input 2D velocity field t3 fit
+'input_int': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
+#'input_vf': sgfit.G3_1.1.fits  # <---- UPDATE HERE
 
-#++++++++++++++++++++++++++++++++i+
+'input_vf': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
+'input_vf_e': 999  # <---- UPDATE HERE
+
+#'input_vf_m_bsfit': 999  # <---- UPDATE HERE
+'input_vf_m_bsfit': input_m_bsfit_vf_grid_x1y1.fits  # <---- UPDATE HERE
+
+'input_vf_blobbed': sgfit.G3_1.1.blob.fits  # <---- UPDATE HERE
+'input_vdisp': model.vrot2.i45.p330.fits  # <---- UPDATE HERE
+#'input_vf_e': model.vrot1.i45.p330.fits  # <---- UPDATE HERE
+
+#+++++++++++++++++++++++++++++++++
 # input 2D velocity field : VLOS lower/upper limits
-_int_lower: 0.04  # <---- UPDATE HERE in km/s
+_int_lower: -999  # <---- UPDATE HERE in km/s
 _int_upper: 10000  # <---- UPDATE HERE in km/s
 _vlos_lower: -10000  # <---- UPDATE HERE in km/s
 _vlos_upper: 10000  # <---- UPDATE HERE in km/s
-_vlos_e_lower: 0.1  # <---- UPDATE HERE in km/s
-_vlos_e_upper: 1.3  # <---- UPDATE HERE in km/s
-_vdisp_lower: 1  # <---- UPDATE HERE in km/s
-_vdisp_upper: 100  # <---- UPDATE HERE in km/s
-_vdisp_wfl: 0  # <---- UPDATE HERE in km/s
-_vdisp_wfu: 1  # <---- UPDATE HERE in km/s
-
+_vdisp_lower: -999  # <---- UPDATE HERE in km/s
+_vdisp_upper: 1000  # <---- UPDATE HERE in km/s
 
 _sigma_sectors_med: 999
 _xpos_sectors_med: 999
@@ -69,14 +62,14 @@ vsys_fitting: free  # <---- fixed or free
 pa_fitting: free  # <---- fixed or free
 incl_fitting: free  # <---- fixed or free
 vrot_fitting: free  # <---- fixed or free
-vrad_fitting: fixed  # <---- fixed or free
+vrad_fitting: free  # <---- fixed or free
 
 
 r_galaxy_plane_s: 0 # : used for PA normalisation (0 ~ 1)
 r_galaxy_plane_e: 999  # : used for PA normalisation (0 ~ 1)
 r_galaxy_plane_e_geo: 999  # : used for PA normalisation (0 ~ 1)
 ratio_valid_to_total: 0.01
-ring_w: 3
+ring_w: 2 
 nrings: 100
 nrings_reliable: 10
 nrings_intp: 30
@@ -92,7 +85,7 @@ xpos_bounds_width: 4  # bound width for XPOS in pixels
 ypos_bounds_width: 4  # bound width for YPOS in pixels
 vsys_bounds_width: 30  # bound width for VSYS in km/s
 pa_bounds_width: 30  # bound width for PA in degrees
-incl_bounds_width: 20  # bound width for INCL in degree
+incl_bounds_width: 10  # bound width for INCL in degree
 vrot_bounds_width: 20  # bound width for VROT in km/s
 vrad_bounds_width: 20  # bound width for VRAD in km/s
 
@@ -108,8 +101,8 @@ pa_bs_bounds: 50  # pa_bs bounds in deg
 
 # ----------------------------------
 # INCL-BS
-n_incl_bs_knots_inner: 0
-k_incl_bs: 0  # 1:linear, 2:quadractic, 3:cubic
+n_incl_bs_knots_inner: 1
+k_incl_bs: 1  # 1:linear, 2:quadractic, 3:cubic
 
 n_coeffs_incl_bs: 999
 incl_bs_min: 0  # min PA value over the radii : used for INCL normalisation (0 ~ 1)
@@ -117,15 +110,15 @@ incl_bs_max: 90  # min PA value over the radii : used for INCL normalisation (0 
 incl_bs_bounds: 100  # incl_bs bounds in deg
 
 # ----------------------------------
-# VROT-BS
-n_vrot_bs_knots_inner: 4
-k_vrot_bs: 3  # 1:linear, 2:quadractic, 3:cubic
+# VROT-BS : (2, 1)
+n_vrot_bs_knots_inner: 5
+k_vrot_bs: 1 # 1:linear, 2:quadractic, 3:cubic
 
 n_coeffs_vrot_bs: 999
 vrot0_bs: 0  # vrot_bs lower bound in km/s
-vrot1_bs: 300  # vrot_bs upper bounds in km/s
+vrot1_bs: 100  # vrot_bs upper bounds in km/s
 
-# ----------------------------------
+# ---------------------------------u-
 # VRAD-BS
 n_vrad_bs_knots_inner: 0
 k_vrad_bs: 0  # 1:linear, 2:quadractic, 3:cubic
@@ -154,9 +147,9 @@ _incl_el: 0
 _r_max_el: 0
 
 _sigma_init: 10
-_xpos_init: 20
-_ypos_init: 20
-_vsys_init: 173
+_xpos_init: 999
+_ypos_init: 999
+_vsys_init: 999
 _pa_init: 45
 _incl_init: 50
 _vrot_init: 30
@@ -164,8 +157,8 @@ _vrad_init: 0
 #+++++++++++++++++++++++++++++++++
 
 # grids
-x_grid_2d: 1  # <---- UPDATE HERE
-y_grid_2d: 1  # <---- UPDATE HERE
+x_grid_2d: 2  # <---- UPDATE HERE
+y_grid_2d: 2  # <---- UPDATE HERE
 x_grid_tr: 1  # <---- UPDATE HERE
 y_grid_tr: 1  # <---- UPDATE HERE
 
@@ -188,7 +181,7 @@ sample: rwalk  # or auto
 #sample: slice  # or auto
 #sample: rslice  # or auto
 #sample: hslice  # or auto
-dlogz_tr: 1000000.1
+dlogz_tr: 0.01
 dlogz_2d: 0.01
 maxiter_tr: 999999
 maxiter: 999999

@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 #|-----------------------------------------|
-#| _2dbat.py
+#| _dynesty_sampler.py
+#|-----------------------------------------|
+#|
+#| version history
+#| v1.0 (2022 Dec 25)
+#|
 #|-----------------------------------------|
 #| by Se-Heon Oh
 #| Dept. of Physics and Astronomy
 #| Sejong University, Seoul, South Korea
 #|-----------------------------------------|
-
-#|-----------------------------------------|
-
-
 
 import time, sys, os
 import io
@@ -4352,7 +4353,7 @@ def run_nested_sampler_trfit(_input_vf, _tr_model_vf, _wt_2d, _ij_aring, _params
 
 
 
-def run_nested_sampler_trfit_2d(_input_vf, combined_vfe_res, _tr_model_vf, _input_int_w, _input_vdisp, _wt_2d_geo, _ij_aring, \
+def run_nested_sampler_trfit_2d(_input_vf, combined_vfe_res_w, _tr_model_vf, _input_int_w, _input_vdisp, _wt_2d_geo, _ij_aring, \
                                 _params, tr_params_bounds, _r_galaxy_plane_2d, r_galaxy_plane, \
                                 tck_vrot_bs_init_from_trfit, tck_pa_bs_init_from_trfit, tck_incl_bs_init_from_trfit, \
                                 _2dbat_run_i, region):
@@ -4448,7 +4449,7 @@ def run_nested_sampler_trfit_2d(_input_vf, combined_vfe_res, _tr_model_vf, _inpu
                 logl_args=[_input_vf, _tr_model_vf, _ij_aring, fit_opt_2d, bspline_opt, _params, _r_galaxy_plane_2d, r_galaxy_plane, _input_vdisp, \
                            n_coeffs_pa_bs, tck_pa_bs, n_coeffs_incl_bs, tck_incl_bs, \
                             n_coeffs_vrot_bs, tck_vrot_bs, \
-                                _trmodel_vsys, combined_vfe_res], \
+                                _trmodel_vsys, combined_vfe_res_w], \
                 ptform_args=[fit_opt_2d, bspline_opt, _params, tr_params_bounds, _r_galaxy_plane_2d, \
                              tck_vrot_bs_init_from_trfit, tck_pa_bs_init_from_trfit, tck_incl_bs_init_from_trfit, _input_vf, _ring_ns_t, _vrot_ns_t, \
                              n_coeffs_pa_bs, tck_pa_bs, n_coeffs_incl_bs, tck_incl_bs, n_coeffs_vrot_bs, tck_vrot_bs])

@@ -4,13 +4,12 @@
 #|-----------------------------------------|
 #| _2dbat.py
 #|-----------------------------------------|
+#| 2024. Jan. 24
+#|-----------------------------------------|
 #| by Se-Heon Oh
 #| Dept. of Physics and Astronomy
 #| Sejong University, Seoul, South Korea
 #|-----------------------------------------|
-
-#|-----------------------------------------|
-
 
 
 from __future__ import division, print_function
@@ -123,7 +122,7 @@ def main():
     num_cpus = psutil.cpu_count(logical=False)
 
 
-    _input_vf_tofit_grid1, _input_vf_tofit_tr, _input_vf_tofit_2d, _tr_model_vf, _input_int_w, _input_vdisp, _input_int_vdisp_w, _input_int_vdisp_w_50percentile, _input_int, combined_vfe_res = find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre)
+    _input_vf_tofit_grid1, _input_vf_tofit_tr, _input_vf_tofit_2d, _tr_model_vf, _input_int_w, _input_vdisp, _input_int_vdisp_w, _input_int_vdisp_w_50percentile, _input_int, combined_vfe_res_w = find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre)
 
     _xpos_t = _params['naxis1'] / 2.
     _ypos_t = _params['naxis2'] / 2.
@@ -347,7 +346,7 @@ def main():
     side = 0
 
 
-    _ij_area_tofit, _tr2dfit_results, _n_dim, fit_opt_2d, std_resample_run  = trfit_2d(_input_vf_tofit_2d, combined_vfe_res, \
+    _ij_area_tofit, _tr2dfit_results, _n_dim, fit_opt_2d, std_resample_run  = trfit_2d(_input_vf_tofit_2d, combined_vfe_res_w, \
                                                                                        _ri, _ro, \
                                                                                        _tr_model_vf, \
                                                                                        _input_int_w, \

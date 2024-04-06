@@ -2,16 +2,12 @@
 # -*- coding: utf-8 -*-
 
 #|-----------------------------------------|
-#| _2dbat.py
+#| _fits_io.py
 #|-----------------------------------------|
 #| by Se-Heon Oh
 #| Dept. of Physics and Astronomy
 #| Sejong University, Seoul, South Korea
 #|-----------------------------------------|
-
-#|-----------------------------------------|
-
-
 
 
 
@@ -1939,7 +1935,7 @@ def set_params_fit_option(_params, sigma, sigma_fitoption, sigma_init, \
 
 
 
-def trfit_2d(_input_vf, combined_vfe_res, \
+def trfit_2d(_input_vf, combined_vfe_res_w, \
             _ri, _ro, \
             _tr_model_vf, _input_int_w, _input_vdisp, _wt_2d_geo, \
             _params, tr_params_bounds, _r_galaxy_plane_2d, \
@@ -1977,7 +1973,7 @@ def trfit_2d(_input_vf, combined_vfe_res, \
     print(tr_params_bounds)
     print('-'*50)
 
-    _trfit_results, _n_dim, fit_opt_2d, std_resample_run = run_nested_sampler_trfit_2d(_input_vf, combined_vfe_res, \
+    _trfit_results, _n_dim, fit_opt_2d, std_resample_run = run_nested_sampler_trfit_2d(_input_vf, combined_vfe_res_w, \
                                                                                        _tr_model_vf, \
                                                                                        _input_int_w, \
                                                                                        _input_vdisp, \
@@ -2144,6 +2140,11 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
             print(f"Error: {e}")
 
 
+    _params['naxis1'] = _naxis1
+    _params['naxis2'] = _naxis2
+    _input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
+    _input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
+
     x_grid_tr, y_grid_tr = _params['x_grid_tr'], _params['y_grid_tr']
     x_grid_2d, y_grid_2d = _params['x_grid_2d'], _params['y_grid_2d']
     x_indices_2d = np.arange(0, _naxis1, x_grid_2d)
@@ -2156,44 +2157,28 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
             except Exception as e:
                 print(f"Error: {e}")
 
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+                       & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
+
+        _input_vf_e[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, _input_vf_e[y_indices_2d[:, None], x_indices_2d], np.nan)
 
         _input_vf_e_flatten = _input_vf_e[~np.isnan(_input_vf_e)].flatten()
 
+        lower_percentile = np.nanpercentile(_input_vf_e_flatten, 5)
 
+        _input_vf_e_winsorized = np.where(_input_vf_e < lower_percentile, lower_percentile, _input_vf_e)
 
-        mean_vf_e, sigma_vf_e = sigma_clipping(_input_vf_e_flatten)
+        _input_vf_e_winsorized[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, _input_vf_e_winsorized[y_indices_2d[:, None], x_indices_2d], np.nan)
 
-        clip_l_vf_e = mean_vf_e - 3*sigma_vf_e
-        clip_u_vf_e = mean_vf_e + 3*sigma_vf_e
-        if clip_l_vf_e < 0: clip_l_vf_e= 0
-
-        condition_2d_e = (_input_vf_e[y_indices_2d[:, None], x_indices_2d] > clip_l_vf_e) \
-                     & (_input_vf_e[y_indices_2d[:, None], x_indices_2d] < clip_u_vf_e) \
-                     & (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
-                     & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
-
-        _input_vf_e_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        _input_vf_e_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_e, _input_vf_e[y_indices_2d[:, None], x_indices_2d], np.nan)
-
-        median_val = np.nanmedian(_input_vf_e_clipped_rs)
-        q1 = np.nanpercentile(_input_vf_e_clipped_rs, 25)
-        q3 = np.nanpercentile(_input_vf_e_clipped_rs, 75)
-        iqr = q3 - q1
-
-        scaled_data_vf_e = (_input_vf_e_clipped_rs - median_val) / iqr
-
-        scaled_data_positive_vf_e = np.abs(scaled_data_vf_e)
-        _input_vf_e_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_e & (scaled_data_positive_vf_e[y_indices_2d[:, None], x_indices_2d] > 0.0001), scaled_data_positive_vf_e[y_indices_2d[:, None], x_indices_2d], np.nan)
-        write_fits_images(_params, _input_vf_e_clipped_rs, _2dbat_run_i, '_input_vf_e_clipped_rs.fits')
+        write_fits_images(_params, _input_vf_e_winsorized, _2dbat_run_i, '_input_vf_e_winsorized_w.fits')
 
     else:
-        condition_2d_e = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
                        & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
 
-        _input_vf_e_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        _input_vf_e_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_e, 1., np.nan)
-        write_fits_images(_params, _input_vf_e_clipped_rs, _2dbat_run_i, '_input_vf_e_clipped_rs.fits')
-
+        _input_vf_e_winsorized = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
+        _input_vf_e_winsorized[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, 1., np.nan)
+        write_fits_images(_params, _input_vf_e_winsorized, _2dbat_run_i, '_input_vf_e_winsorized_w.fits')
 
     if _2dbat_run_i_pre != 999:
         with fits.open(_params['wdir'] + '/' + _params['_2dbatdir'] + ".%d" % _2dbat_run_i_pre + '/' + _params['input_vf_m_bsfit'], 'update') as hdu:
@@ -2201,57 +2186,34 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
                 _input_vf_m_bsfit = hdu[0].data
             except Exception as e:
                 print(f"Error: {e}")
-        
+
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+                       & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
+
+        _input_vf_m_bsfit[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, _input_vf_m_bsfit[y_indices_2d[:, None], x_indices_2d], np.nan)
+
         _input_vf_m_bsfit_flatten = _input_vf_m_bsfit[~np.isnan(_input_vf_m_bsfit)].flatten()
 
 
-        mean_res, sigma_res = sigma_clipping(_input_vf_m_bsfit_flatten)
+        lower_percentile = np.nanpercentile(_input_vf_m_bsfit_flatten, 5)
+        upper_percentile = np.nanpercentile(_input_vf_m_bsfit_flatten, 95)
 
-        clip_l_res = mean_res - 3*sigma_res
-        clip_u_res = mean_res + 3*sigma_res
+        _input_vf_m_bsfit_winsorized = np.where(_input_vf_m_bsfit < lower_percentile, lower_percentile, _input_vf_m_bsfit)
+        _input_vf_m_bsfit_winsorized = np.where(_input_vf_m_bsfit_winsorized > upper_percentile, upper_percentile, _input_vf_m_bsfit_winsorized)
+
+        _input_vf_m_bsfit_winsorized[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, _input_vf_m_bsfit_winsorized[y_indices_2d[:, None], x_indices_2d], np.nan)
 
 
-        print(mean_res, sigma_res)
-        print(clip_l_res, clip_u_res)
 
-        condition_2d_res = (_input_vf_m_bsfit[y_indices_2d[:, None], x_indices_2d] > clip_l_res) \
-                     & (_input_vf_m_bsfit[y_indices_2d[:, None], x_indices_2d] < clip_u_res) \
-                     & (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
-                     & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
-
-        _input_vf_m_bsfit_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        _input_vf_m_bsfit_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_res, _input_vf_m_bsfit[y_indices_2d[:, None], x_indices_2d], np.nan)
-
-        median_val = np.nanmedian(_input_vf_m_bsfit_clipped_rs)
-        q1 = np.nanpercentile(_input_vf_m_bsfit_clipped_rs, 25)
-        q3 = np.nanpercentile(_input_vf_m_bsfit_clipped_rs, 75)
-        iqr = q3 - q1
-
-        print(median_val, iqr)
-
-        scaled_data_res = (_input_vf_m_bsfit_clipped_rs - median_val) / iqr
-
-        scaled_data_positive_res = np.abs(scaled_data_res)
-
-        print(_input_vf_m_bsfit_clipped_rs.shape)
-        print(scaled_data_res.shape)
-        _input_vf_m_bsfit_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_res & (scaled_data_positive_res[y_indices_2d[:, None], x_indices_2d] > 0.0001), scaled_data_positive_res[y_indices_2d[:, None], x_indices_2d], np.nan)
-
-        write_fits_images(_params, _input_vf_m_bsfit_clipped_rs, _2dbat_run_i, '_input_vf_m_bsfit_cliiped_rs.fits')
+        write_fits_images(_params, _input_vf_m_bsfit_winsorized, _2dbat_run_i, '_input_vf_m_bsfit_winsorized_w.fits')
 
     else:
-        condition_2d_res = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
                        & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
 
-        _input_vf_m_bsfit_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        _input_vf_m_bsfit_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_res, 1., np.nan)
-        write_fits_images(_params, _input_vf_m_bsfit_clipped_rs, _2dbat_run_i, '_input_vf_m_bsfit_cliiped_rs.fits')
-
-
-    _params['naxis1'] = _naxis1
-    _params['naxis2'] = _naxis2
-    _input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
-    _input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
+        _input_vf_m_bsfit_winsorized = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
+        _input_vf_m_bsfit_winsorized[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, 1., np.nan)
+        write_fits_images(_params, _input_vf_m_bsfit_winsorized, _2dbat_run_i, '_input_vf_m_bsfit_winsorized_w.fits')
 
 
     _tr_model_vf = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
@@ -2302,53 +2264,28 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
     write_fits_images(_params, _input_int_vdisp_w_elfit, _2dbat_run_i, '_input_int_vdisp_w_elfit.fits')
 
 
-    combined_vfe_res = _input_vf_m_bsfit_clipped_rs*_input_vf_e_clipped_rs
 
-
+    combined_vfe_res = _input_vf_e_winsorized*_input_vf_m_bsfit_winsorized
     if _params['input_vf_e'] != 999 or _2dbat_run_i_pre != 999:
 
-        combined_vfe_res_flatten = combined_vfe_res[~np.isnan(combined_vfe_res)].flatten()
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+                          & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
 
-        mean_combined, sigma_combined = sigma_clipping(combined_vfe_res_flatten)
+        scaled_data_positive_combined = np.abs(combined_vfe_res)
 
-        clip_l_combined = mean_combined - 3*sigma_combined
-        clip_u_combined = mean_combined + 3*sigma_combined
+        combined_vfe_res_w = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
+        combined_vfe_res_w[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob & (scaled_data_positive_combined[y_indices_2d[:, None], x_indices_2d] > 0.0001), scaled_data_positive_combined[y_indices_2d[:, None], x_indices_2d], np.nan)
 
-
-        print(mean_combined, sigma_combined)
-        print(clip_l_combined, clip_u_combined)
-
-        condition_2d_combined = (combined_vfe_res[y_indices_2d[:, None], x_indices_2d] > clip_l_combined) \
-                     & (combined_vfe_res[y_indices_2d[:, None], x_indices_2d] < clip_u_combined)
-
-        combined_vfe_res_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        combined_vfe_res_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_combined, combined_vfe_res[y_indices_2d[:, None], x_indices_2d], np.nan)
-
-        median_val = np.nanmedian(combined_vfe_res_clipped_rs)
-        q1 = np.nanpercentile(combined_vfe_res_clipped_rs, 25)
-        q3 = np.nanpercentile(combined_vfe_res_clipped_rs, 75)
-        iqr = q3 - q1
-
-        print(median_val, iqr)
-
-        scaled_data_combined = (combined_vfe_res_clipped_rs - median_val) / iqr
-
-        scaled_data_positive_combined = np.abs(scaled_data_combined)
-
-        combined_vfe_res_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_combined & (scaled_data_positive_combined[y_indices_2d[:, None], x_indices_2d] > 0.0001), scaled_data_positive_combined[y_indices_2d[:, None], x_indices_2d], np.nan)
-
-        write_fits_images(_params, combined_vfe_res_clipped_rs, _2dbat_run_i, 'combined_vfe_res_clipped_rs.fits')
+        write_fits_images(_params, combined_vfe_res_w, _2dbat_run_i, 'combined_vfe_res_w.fits')
 
     else: # 999 and 999
 
-        condition_2d_combined = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
-                       & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
+        condition_2d_blob = (_input_vf[y_indices_2d[:, None], x_indices_2d] > _params['_vlos_lower']) \
+                          & (_input_vf[y_indices_2d[:, None], x_indices_2d] < _params['_vlos_upper'])
 
-        combined_vfe_res_clipped_rs = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
-        combined_vfe_res_clipped_rs[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_combined, 1., np.nan)
-        write_fits_images(_params, combined_vfe_res_clipped_rs, _2dbat_run_i, 'combined_vfe_res_clipped_rs.fits')
-
-
+        combined_vfe_res_w = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
+        combined_vfe_res_w[y_indices_2d[:, None], x_indices_2d] = np.where(condition_2d_blob, 1., np.nan)
+        write_fits_images(_params, combined_vfe_res_w, _2dbat_run_i, 'combined_vfe_res_w.fits')
 
 
 
@@ -2375,7 +2312,7 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
     _input_vf_vlos_LU_masked_tr[y_indices_tr[:, None], x_indices_tr] = np.where(condition_tr, _input_vf[y_indices_tr[:, None], x_indices_tr], np.nan)
 
     return _input_vf_vlos_LU_masked_nogrid, _input_vf_vlos_LU_masked_tr, _input_vf_vlos_LU_masked_2d, _tr_model_vf, \
-           _input_int_w, _input_vdisp, _input_int_w*_input_vdisp, _input_int_vdisp_w_elfit, _input_int_LU_masked_nogrid, combined_vfe_res_clipped_rs
+           _input_int_w, _input_vdisp, _input_int_w*_input_vdisp, _input_int_vdisp_w_elfit, _input_int_LU_masked_nogrid, combined_vfe_res_w
 
 
 
