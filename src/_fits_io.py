@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+  #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #|-----------------------------------------|
@@ -2142,8 +2142,8 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
 
     _params['naxis1'] = _naxis1
     _params['naxis2'] = _naxis2
-    _input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
-    _input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
+    #_input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
+    #_input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
 
     x_grid_tr, y_grid_tr = _params['x_grid_tr'], _params['y_grid_tr']
     x_grid_2d, y_grid_2d = _params['x_grid_2d'], _params['y_grid_2d']
