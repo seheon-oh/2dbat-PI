@@ -2250,8 +2250,8 @@ def find_area_tofit(_params, _2dbat_run_i, _2dbat_run_i_pre):
 
     _params['naxis1'] = _naxis1
     _params['naxis2'] = _naxis2
-    _input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
-    _input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
+    #_input_vf = find_the_largest_blob(_input_vf,  _params['_vlos_lower'])
+    #_input_int = find_the_largest_blob(_input_int,  _params['_int_lower'])
 
 
     _tr_model_vf = np.full((_naxis2, _naxis1), fill_value=np.nan, dtype=np.float64)
